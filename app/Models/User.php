@@ -43,8 +43,6 @@ final class User extends Authenticatable implements MustVerifyEmail
     use TwoFactorAuthenticatable;
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     public function casts(): array
