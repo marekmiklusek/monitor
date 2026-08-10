@@ -181,5 +181,6 @@
     ":count s ago": "před :count s",
     ":count min ago": "před :count min",
     ":count h ago": "před :count h",
-    ":count d ago": "před :count d"
+    ":count d ago": "před :count d",
+    ":count in last 24h": ":count za posledních 24 h"
 }

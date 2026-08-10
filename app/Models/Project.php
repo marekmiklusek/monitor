@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * @property-read string $id
@@ -25,7 +26,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  * @property-read int $open_issues_count
+ * @property-read int $recent_occurrences_count
  * @property-read Collection<int, Issue> $issues
+ * @property-read Collection<int, Occurrence> $occurrences
  */
 #[Hidden([
     'token_hash',
@@ -66,6 +69,14 @@ final class Project extends Model
     public function issues(): HasMany
     {
         return $this->hasMany(Issue::class);
+    }
+
+    /**
+     * @return HasManyThrough<Occurrence, Issue, $this>
+     */
+    public function occurrences(): HasManyThrough
+    {
+        return $this->hasManyThrough(Occurrence::class, Issue::class);
     }
 
     public function heartbeatStatus(): HeartbeatStatus

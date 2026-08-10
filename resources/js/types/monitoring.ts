@@ -17,6 +17,7 @@ export interface ProjectSummary {
 
 export interface DashboardProject extends ProjectSummary {
     open_issues_count: number;
+    recent_occurrences_count: number;
     heartbeat_status: HeartbeatStatus;
     last_heartbeat_at: string | null;
 }

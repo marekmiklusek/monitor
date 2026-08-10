@@ -26,6 +26,7 @@ final readonly class DashboardController
                 'name' => $project->name,
                 'environment' => $project->environment,
                 'open_issues_count' => $project->open_issues_count,
+                'recent_occurrences_count' => $project->recent_occurrences_count,
                 'heartbeat_status' => $project->heartbeatStatus()->value,
                 'last_heartbeat_at' => $project->last_heartbeat_at?->toIso8601String(),
             ])->all(),

@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Issue;
 use App\Models\Project;
 use App\Enums\IssueStatus;
+use App\Models\Occurrence;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('lists projects with their open issue counts', function (): void {
@@ -30,6 +32,66 @@ it('lists projects with their open issue counts', function (): void {
             ->where('projects.0.name', 'Checkout API')
             ->where('projects.0.open_issues_count', 3),
         );
+});
+
+it('reports zero recent occurrences for a project with only old activity', function (): void {
+    $issue = Issue::factory()->create();
+
+    Occurrence::factory()->count(2)->create([
+        'issue_id' => $issue->id,
+        'occurred_at' => now()->subDays(2),
+    ]);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->where('projects.0.recent_occurrences_count', 0),
+        );
+});
+
+it('reports the occurrences of the last day', function (): void {
+    $issue = Issue::factory()->create();
+
+    Occurrence::factory()->count(3)->create([
+        'issue_id' => $issue->id,
+        'occurred_at' => now()->subHours(3),
+    ]);
+
+    Occurrence::factory()->create([
+        'issue_id' => $issue->id,
+        'occurred_at' => now()->subDays(2),
+    ]);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->where('projects.0.recent_occurrences_count', 3),
+        );
+});
+
+it('does not run a query per project', function (): void {
+    $user = User::factory()->create();
+
+    $countQueries = function () use ($user): int {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $this->actingAs($user)->get(route('dashboard'))->assertOk();
+
+        $queries = count(DB::getQueryLog());
+
+        DB::disableQueryLog();
+
+        return $queries;
+    };
+
+    Project::factory()->count(2)->create();
+
+    $withTwo = $countQueries();
+
+    Project::factory()->count(8)->create();
+
+    expect($countQueries())->toBe($withTwo);
 });
 
 it('marks a project without recent heartbeats as stale', function (): void {

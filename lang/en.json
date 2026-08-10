@@ -181,5 +181,6 @@
     ":count s ago": ":count s ago",
     ":count min ago": ":count min ago",
     ":count h ago": ":count h ago",
-    ":count d ago": ":count d ago"
+    ":count d ago": ":count d ago",
+    ":count in last 24h": ":count in last 24h"
 }

@@ -29,17 +29,32 @@ export function ProjectCard({ project }: { project: DashboardProject }) {
                 />
             </div>
 
-            <Link
-                href={`/issues?project=${project.id}&status=open`}
-                className="text-sm hover:underline"
-            >
-                <span className="text-2xl font-semibold tabular-nums">
-                    {project.open_issues_count}
-                </span>{' '}
-                <span className="text-muted-foreground">
-                    {__('open issues')}
+            <div className="flex items-end justify-between gap-3">
+                <Link
+                    href={`/issues?project=${project.id}&status=open`}
+                    className="text-sm hover:underline"
+                >
+                    <span className="text-2xl font-semibold tabular-nums">
+                        {project.open_issues_count}
+                    </span>{' '}
+                    <span className="text-muted-foreground">
+                        {__('open issues')}
+                    </span>
+                </Link>
+
+                <span
+                    className={cn(
+                        'text-sm tabular-nums',
+                        project.recent_occurrences_count > 0
+                            ? 'rounded-full bg-amber-100 px-2.5 py-1 font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-300'
+                            : 'text-muted-foreground',
+                    )}
+                >
+                    {__(':count in last 24h', {
+                        count: project.recent_occurrences_count,
+                    })}
                 </span>
-            </Link>
+            </div>
         </div>
     );
 }
