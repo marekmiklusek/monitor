@@ -1,5 +1,5 @@
 import { Form, Head, router } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { HeartbeatBadge } from '@/components/monitoring/heartbeat-badge';
 import { TokenRevealDialog } from '@/components/monitoring/token-reveal-dialog';
 import { Button } from '@/components/ui/button';
@@ -35,16 +35,12 @@ export default function ProjectsIndex({
         },
     ];
 
-    const [revealed, setRevealed] = useState<string | null>(revealedToken);
+    const [dismissedToken, setDismissedToken] = useState<string | null>(null);
     const [regenerating, setRegenerating] = useState<ProjectListItem | null>(
         null,
     );
 
-    useEffect(() => {
-        if (revealedToken !== null) {
-            setRevealed(revealedToken);
-        }
-    }, [revealedToken]);
+    const revealed = revealedToken === dismissedToken ? null : revealedToken;
 
     const confirmRegenerate = () => {
         if (regenerating === null) {
@@ -176,7 +172,7 @@ export default function ProjectsIndex({
 
             <TokenRevealDialog
                 token={revealed}
-                onClose={() => setRevealed(null)}
+                onClose={() => setDismissedToken(revealedToken)}
             />
 
             <Dialog

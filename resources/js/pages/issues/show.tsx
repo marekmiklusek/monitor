@@ -33,19 +33,19 @@ export default function IssueShow({
     const [selectedId, setSelectedId] = useState<string | null>(
         occurrences[0]?.id ?? null,
     );
-    const [detail, setDetail] = useState<Detail | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loaded, setLoaded] = useState<Detail | null>(null);
+    const [failedId, setFailedId] = useState<string | null>(null);
+
+    const detail = loaded !== null && loaded.id === selectedId ? loaded : null;
+    const loading =
+        selectedId !== null && detail === null && failedId !== selectedId;
 
     useEffect(() => {
         if (selectedId === null) {
-            setDetail(null);
-
             return;
         }
 
         const controller = new AbortController();
-
-        setLoading(true);
 
         fetch(`/issues/${issue.id}/occurrences/${selectedId}`, {
             headers: { Accept: 'application/json' },
@@ -53,11 +53,12 @@ export default function IssueShow({
         })
             .then((response) => response.json())
             .then((data: Detail) => {
-                setDetail(data);
-                setLoading(false);
+                setLoaded(data);
             })
             .catch(() => {
-                setLoading(false);
+                if (!controller.signal.aborted) {
+                    setFailedId(selectedId);
+                }
             });
 
         return () => controller.abort();

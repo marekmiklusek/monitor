@@ -52,16 +52,8 @@ export default [
                     fixStyle: 'separate-type-imports',
                 },
             ],
-            'import/order': [
-                'error',
-                {
-                    groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-                    alphabetize: {
-                        order: 'asc',
-                        caseInsensitive: true,
-                    },
-                },
-            ],
+            // import/order is disabled: eslint-plugin-import 2.x calls
+            // sourceCode.getTokenOrCommentBefore, which ESLint 10 removed.
             'import/consistent-type-specifier-style': [
                 'error',
                 'prefer-top-level',
