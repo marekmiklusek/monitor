@@ -139,8 +139,11 @@ export default function IssuesIndex({
                                 {issues.data.map((issue) => (
                                     <tr
                                         key={issue.id}
+                                        onClick={() =>
+                                            router.visit(`/issues/${issue.id}`)
+                                        }
                                         className={cn(
-                                            'border-t',
+                                            'cursor-pointer border-t transition-colors hover:bg-accent/50',
                                             isAfter(
                                                 issue.last_seen_at,
                                                 recent_threshold,
@@ -160,7 +163,10 @@ export default function IssuesIndex({
                                         <td className="max-w-md px-3 py-2">
                                             <Link
                                                 href={`/issues/${issue.id}`}
-                                                className="font-medium hover:underline"
+                                                onClick={(event) =>
+                                                    event.stopPropagation()
+                                                }
+                                                className="font-medium"
                                             >
                                                 {issue.title}
                                             </Link>
