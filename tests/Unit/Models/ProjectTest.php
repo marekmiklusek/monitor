@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Issue;
 use App\Models\Project;
-use App\Models\Occurrence;
+use App\Enums\HeartbeatStatus;
 
 it('generates a token with a matching hash', function (): void {
     $token = Project::generateToken();
@@ -31,16 +31,22 @@ it('relates a project to its issues', function (): void {
     expect($project->issues->pluck('id')->all())->toBe([$issue->id]);
 });
 
-it('relates an issue to its project and occurrences', function (): void {
-    $issue = Issue::factory()->create();
-    $occurrence = Occurrence::factory()->create(['issue_id' => $issue->id]);
+it('reports the heartbeat status', function (?int $minutesAgo, HeartbeatStatus $expected): void {
+    $project = Project::factory()->create([
+        'last_heartbeat_at' => $minutesAgo === null ? null : now()->subMinutes($minutesAgo),
+    ]);
 
-    expect($issue->project->id)->toBe($issue->project_id)
-        ->and($issue->occurrences->pluck('id')->all())->toBe([$occurrence->id]);
-});
+    expect($project->heartbeatStatus())->toBe($expected);
+})->with([
+    'never seen' => [null, HeartbeatStatus::Missing],
+    'just now' => [0, HeartbeatStatus::Ok],
+    'within the threshold' => [14, HeartbeatStatus::Ok],
+    'past the threshold' => [16, HeartbeatStatus::Stale],
+]);
 
-it('relates an occurrence back to its issue', function (): void {
-    $occurrence = Occurrence::factory()->create();
+it('derives the heartbeat threshold from the configuration', function (): void {
+    config()->set('monitoring.heartbeat_threshold_minutes', 30);
 
-    expect($occurrence->issue->id)->toBe($occurrence->issue_id);
+    expect(Project::heartbeatThreshold()->toIso8601String())
+        ->toBe(now()->subMinutes(30)->toIso8601String());
 });

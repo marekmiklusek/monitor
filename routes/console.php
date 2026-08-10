@@ -13,3 +13,7 @@ Schedule::command('db-backup:run')
     ->dailyAt('02:00')
     ->onOneServer()
     ->runInBackground();
+
+Schedule::command('monitor:check-heartbeats')
+    ->everyFiveMinutes()
+    ->onOneServer();

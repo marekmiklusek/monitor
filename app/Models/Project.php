@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Carbon\CarbonInterface;
 use Illuminate\Support\Str;
+use App\Enums\HeartbeatStatus;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
@@ -20,8 +21,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property-read string $environment
  * @property-read string $token_hash
  * @property-read CarbonInterface|null $last_heartbeat_at
+ * @property-read CarbonInterface|null $heartbeat_alerted_at
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
+ * @property-read int $open_issues_count
  * @property-read Collection<int, Issue> $issues
  */
 #[Hidden([
@@ -52,12 +55,28 @@ final class Project extends Model
         return hash('sha256', $token);
     }
 
+    public static function heartbeatThreshold(): CarbonInterface
+    {
+        return now()->subMinutes(config()->integer('monitoring.heartbeat_threshold_minutes'));
+    }
+
     /**
      * @return HasMany<Issue, $this>
      */
     public function issues(): HasMany
     {
         return $this->hasMany(Issue::class);
+    }
+
+    public function heartbeatStatus(): HeartbeatStatus
+    {
+        if ($this->last_heartbeat_at === null) {
+            return HeartbeatStatus::Missing;
+        }
+
+        return $this->last_heartbeat_at->lt(self::heartbeatThreshold())
+            ? HeartbeatStatus::Stale
+            : HeartbeatStatus::Ok;
     }
 
     /**
@@ -71,6 +90,7 @@ final class Project extends Model
             'environment' => 'string',
             'token_hash' => 'string',
             'last_heartbeat_at' => 'datetime',
+            'heartbeat_alerted_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

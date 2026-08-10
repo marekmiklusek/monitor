@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('environment');
             $table->string('token_hash')->unique();
             $table->timestamp('last_heartbeat_at')->nullable();
+            $table->timestamp('heartbeat_alerted_at')->nullable();
             $table->timestamps();
         });
     }

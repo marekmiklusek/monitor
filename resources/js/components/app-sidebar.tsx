@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { LayoutGrid } from 'lucide-react';
+import { Boxes, LayoutGrid, TriangleAlert } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -24,6 +24,16 @@ export function AppSidebar() {
             title: __('Dashboard'),
             href: dashboard(),
             icon: LayoutGrid,
+        },
+        {
+            title: __('Issues'),
+            href: '/issues',
+            icon: TriangleAlert,
+        },
+        {
+            title: __('Projects'),
+            href: '/projects',
+            icon: Boxes,
         },
     ];
 
