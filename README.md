@@ -1,6 +1,4 @@
-# Monitor
-
-![Monitoring hub for Laravel applications](.github/banner.svg)
+![Monitor, a monitoring hub for Laravel applications](.github/banner.svg)
 
 Client projects install the companion [laravel-monitor-client](https://github.com/marekmiklusek/laravel-monitor-client) package, which reports exceptions, failed jobs, slow queries, logs and heartbeats to this central app. Incoming occurrences are grouped into issues, browsable in an admin UI, and silent projects trigger notifications by mail or Telegram.
 
