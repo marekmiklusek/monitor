@@ -14,13 +14,13 @@ Built with Laravel 13, Inertia v3 + React 19, Tailwind CSS 4 and Pest 5.
 ## Setup
 
 ```bash
-composer run setup
+composer setup
 ```
 
 This installs Composer and npm dependencies, copies `.env`, generates the app key, runs migrations and builds the frontend. For development:
 
 ```bash
-composer run dev
+composer dev
 ```
 
 ## Configuration
@@ -89,6 +89,7 @@ Content-Type: application/json
 
 - `type` is one of `exception`, `failed_job`, `slow_query`, `heartbeat`, `log`.
 - At most 100 occurrences per request; an unknown `schema_version` returns 422.
+- Requests are rate limited to 120 per minute per project and answered with 429 beyond that. Payloads larger than 512 KB are rejected with 413 before authentication.
 - The endpoint validates, dispatches a queued job and responds with `202 Accepted` and an empty body. All processing happens in the queue.
 
 ### Grouping
@@ -109,7 +110,13 @@ Every notification goes to the channels listed in `MONITORING_CHANNELS`.
 
 **Issues.** A first-ever occurrence of a fingerprint notifies as a new issue, and an occurrence on a resolved issue notifies as a regression. Repeat occurrences of an already open issue stay silent. Notifications are throttled to one per project per throttle window; anything raised inside that window is held and sent as a single digest by `monitor:flush-issue-notifications`, which also runs every five minutes.
 
-Both commands need the scheduler:
+## Retention
+
+`monitor:prune` runs daily at 03:00. It deletes resolved and ignored issues last seen more than 90 days ago along with their occurrences, and any occurrence older than 30 days regardless of issue status. Open issues are never pruned. Both windows are configurable in `config/monitoring.php`.
+
+## Scheduler
+
+The heartbeat, digest and prune commands all need the scheduler running:
 
 ```bash
 php artisan schedule:work
@@ -127,7 +134,7 @@ Registration is controlled by `FORTIFY_REGISTRATION_ENABLED`. The UI ships with 
 ## Testing
 
 ```bash
-composer test           # type coverage, unit tests with 100% coverage, lint, static analysis
+composer test           # type coverage, tests at exactly 100% coverage, lint, static analysis
 php artisan test        # test suite only
 ```
 
