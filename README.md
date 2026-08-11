@@ -137,3 +137,7 @@ composer test                     # type coverage, tests at exactly 100% coverag
 ```
 
 The project enforces 100% code coverage, 100% type coverage, PHPStan at level max and Pint/Rector formatting.
+
+## License
+
+Released under the [MIT License](LICENSE).
