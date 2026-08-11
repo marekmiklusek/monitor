@@ -1,10 +1,8 @@
-![Monitor](docs/banner.svg)
-
 # Monitor
 
-A self-hosted monitoring hub for Laravel applications. Client projects install the companion [laravel-monitor-client](https://github.com/marekmiklusek/laravel-monitor-client) package, which reports exceptions, failed jobs, slow queries, logs and heartbeats to this central app. Incoming occurrences are grouped into issues, browsable in an admin UI, and silent projects trigger notifications by mail or Telegram.
+![Monitoring hub for Laravel applications](.github/banner.svg)
 
-Built with Laravel 13, Inertia v3 + React 19, Tailwind CSS 4 and Pest 5.
+Client projects install the companion [laravel-monitor-client](https://github.com/marekmiklusek/laravel-monitor-client) package, which reports exceptions, failed jobs, slow queries, logs and heartbeats to this central app. Incoming occurrences are grouped into issues, browsable in an admin UI, and silent projects trigger notifications by mail or Telegram.
 
 ## Requirements
 
