@@ -102,7 +102,6 @@ export default function IssueShow({
                                 </h1>
                                 <IssueStatusBadge status={issue.status} />
                             </div>
-
                         </div>
 
                         <div className="flex gap-2">
