@@ -15,7 +15,9 @@ final class CheckHeartbeatsCommand extends Command
 {
     public function handle(CheckHeartbeats $checkHeartbeats): int
     {
-        $checkHeartbeats->execute();
+        $result = $checkHeartbeats->execute();
+
+        $this->components->info("Alerted {$result['alerted']} projects and recovered {$result['recovered']}.");
 
         return self::SUCCESS;
     }

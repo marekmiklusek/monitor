@@ -110,10 +110,37 @@ it('runs the check through the artisan command', function (): void {
     expect($command)->toBeInstanceOf(PendingCommand::class);
 
     if ($command instanceof PendingCommand) {
-        $command->assertSuccessful()->run();
+        $command->expectsOutputToContain('Alerted 1 projects and recovered 0.')->run();
     }
 
     Notification::assertSentTimes(HeartbeatMissing::class, 1);
+});
+
+it('reports the counts of alerted and recovered projects', function (): void {
+    Notification::fake();
+
+    Project::factory()->create([
+        'last_heartbeat_at' => now()->subMinute(),
+        'heartbeat_alerted_at' => now()->subHour(),
+    ]);
+
+    $command = $this->artisan('monitor:check-heartbeats');
+
+    expect($command)->toBeInstanceOf(PendingCommand::class);
+
+    if ($command instanceof PendingCommand) {
+        $command->expectsOutputToContain('Alerted 0 projects and recovered 1.')->run();
+    }
+});
+
+it('returns the counts from the action', function (): void {
+    Notification::fake();
+
+    Project::factory()->create(['last_heartbeat_at' => now()->subMinutes(20)]);
+    Project::factory()->create(['last_heartbeat_at' => now()]);
+
+    expect(resolve(CheckHeartbeats::class)->execute())
+        ->toBe(['alerted' => 1, 'recovered' => 0]);
 });
 
 it('builds the outage mail message', function (): void {

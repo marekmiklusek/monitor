@@ -11,44 +11,59 @@ use App\Notifications\HeartbeatRecovered;
 
 final readonly class CheckHeartbeats
 {
-    public function execute(): void
+    /**
+     * @return array{alerted: int, recovered: int}
+     */
+    public function execute(): array
     {
         $threshold = Project::heartbeatThreshold();
 
-        Project::query()->eachById(function (Project $project) use ($threshold): void {
+        $alerted = 0;
+        $recovered = 0;
+
+        Project::query()->eachById(function (Project $project) use ($threshold, &$alerted, &$recovered): void {
             $isStale = $project->last_heartbeat_at === null
                 || $project->last_heartbeat_at->lt($threshold);
 
             if ($isStale) {
-                $this->alert($project);
+                $alerted += $this->alert($project);
 
                 return;
             }
 
-            $this->recover($project);
+            $recovered += $this->recover($project);
         });
+
+        return [
+            'alerted' => $alerted,
+            'recovered' => $recovered,
+        ];
     }
 
-    private function alert(Project $project): void
+    private function alert(Project $project): int
     {
         if ($project->heartbeat_alerted_at !== null) {
-            return;
+            return 0;
         }
 
         $project->fill(['heartbeat_alerted_at' => now()])->save();
 
         $this->notify(new HeartbeatMissing($project));
+
+        return 1;
     }
 
-    private function recover(Project $project): void
+    private function recover(Project $project): int
     {
         if ($project->heartbeat_alerted_at === null) {
-            return;
+            return 0;
         }
 
         $project->fill(['heartbeat_alerted_at' => null])->save();
 
         $this->notify(new HeartbeatRecovered($project));
+
+        return 1;
     }
 
     private function notify(HeartbeatMissing|HeartbeatRecovered $notification): void
