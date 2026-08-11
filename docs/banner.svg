@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440" role="img" aria-label="Monitor, a self hosted monitoring hub for Laravel applications">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#1c1c1c"/>
+            <stop offset="55%" stop-color="#171717"/>
+            <stop offset="100%" stop-color="#101010"/>
+        </linearGradient>
+
+        <linearGradient id="pulse" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#3f9d5a" stop-opacity="0"/>
+            <stop offset="18%" stop-color="#3f9d5a" stop-opacity="0.9"/>
+            <stop offset="52%" stop-color="#3f9d5a" stop-opacity="0.9"/>
+            <stop offset="60%" stop-color="#c4453c" stop-opacity="0.95"/>
+            <stop offset="100%" stop-color="#c4453c" stop-opacity="0"/>
+        </linearGradient>
+
+        <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#c4453c" stop-opacity="0.85"/>
+            <stop offset="100%" stop-color="#c4453c" stop-opacity="0"/>
+        </linearGradient>
+
+        <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stop-color="#c4453c" stop-opacity="0.20"/>
+            <stop offset="100%" stop-color="#c4453c" stop-opacity="0"/>
+        </radialGradient>
+    </defs>
+
+    <rect width="1280" height="440" fill="url(#bg)"/>
+    <rect width="1280" height="440" fill="none" stroke="#2a2a2a" stroke-width="2"/>
+
+    <g opacity="0.5">
+        <path d="M0 96 H1280 M0 192 H1280 M0 288 H1280 M0 384 H1280" stroke="#222222" stroke-width="1"/>
+        <path d="M96 0 V440 M320 0 V440 M544 0 V440 M768 0 V440 M992 0 V440 M1216 0 V440" stroke="#1f1f1f" stroke-width="1"/>
+    </g>
+
+    <ellipse cx="1010" cy="196" rx="300" ry="190" fill="url(#glow)"/>
+
+    <g transform="translate(96 96)">
+        <rect x="0" y="0" width="4" height="112" rx="2" fill="#c4453c"/>
+
+        <text x="26" y="22" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace" font-size="15" letter-spacing="4.5" fill="#8a8a8a">SELF HOSTED</text>
+
+        <text x="24" y="100" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="82" font-weight="700" letter-spacing="-2.5" fill="#fafafa">Monitor</text>
+    </g>
+
+    <rect x="120" y="242" width="360" height="2" fill="url(#rule)"/>
+
+    <text x="120" y="292" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="25" fill="#c8c8c8">Monitoring hub for Laravel applications.</text>
+
+    <text x="120" y="330" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="19" fill="#7c7c7c">Exceptions, failed jobs, slow queries, logs and heartbeats,</text>
+    <text x="120" y="358" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="19" fill="#7c7c7c">grouped into issues, alerted by mail or Telegram.</text>
+
+    <g transform="translate(760 168)">
+        <rect x="0" y="0" width="424" height="140" rx="12" fill="#141414" stroke="#2d2d2d" stroke-width="1.5"/>
+
+        <circle cx="26" cy="30" r="5" fill="#c4453c"/>
+        <text x="44" y="35" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace" font-size="14" fill="#e0e0e0">RuntimeException</text>
+        <text x="382" y="35" text-anchor="end" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace" font-size="13" fill="#6f6f6f">×24</text>
+
+        <rect x="26" y="52" width="372" height="1" fill="#262626"/>
+
+        <circle cx="26" cy="76" r="5" fill="#c08a2e"/>
+        <text x="44" y="81" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace" font-size="14" fill="#e0e0e0">QueryException</text>
+        <text x="382" y="81" text-anchor="end" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace" font-size="13" fill="#6f6f6f">×7</text>
+
+        <rect x="26" y="98" width="372" height="1" fill="#262626"/>
+
+        <circle cx="26" cy="118" r="5" fill="#3f9d5a"/>
+        <text x="44" y="123" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace" font-size="14" fill="#9a9a9a">heartbeat ok</text>
+    </g>
+
+    <rect x="760" y="334" width="424" height="2" fill="url(#pulse)"/>
+
+    <g transform="translate(120 404)" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace" font-size="14" fill="#6f6f6f">
+        <text x="0" y="0">Laravel 13</text>
+        <text x="104" y="0" fill="#3a3a3a">·</text>
+        <text x="124" y="0">Inertia v3</text>
+        <text x="226" y="0" fill="#3a3a3a">·</text>
+        <text x="246" y="0">React 19</text>
+        <text x="338" y="0" fill="#3a3a3a">·</text>
+        <text x="358" y="0">Tailwind 4</text>
+        <text x="464" y="0" fill="#3a3a3a">·</text>
+        <text x="484" y="0">Pest 5</text>
+    </g>
+
+    <text x="1184" y="404" text-anchor="end" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace" font-size="14" fill="#4f4f4f">100% coverage</text>
+</svg>
