@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { Check, Copy } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -9,6 +10,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { useTranslations } from '@/hooks/use-translations';
+import { cn } from '@/lib/utils';
 
 async function copyToClipboard(
     text: string,
@@ -50,6 +52,16 @@ export function TokenRevealDialog({
     const [copied, setCopied] = useState(false);
     const [failed, setFailed] = useState(false);
     const tokenRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        if (!copied) {
+            return;
+        }
+
+        const timeout = setTimeout(() => setCopied(false), 2000);
+
+        return () => clearTimeout(timeout);
+    }, [copied]);
 
     const handleCopy = async () => {
         if (token === null) {
@@ -104,7 +116,13 @@ export function TokenRevealDialog({
                         type="button"
                         variant="outline"
                         onClick={handleCopy}
+                        className={cn(
+                            'transition-colors',
+                            copied &&
+                                'border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 dark:hover:bg-emerald-950',
+                        )}
                     >
+                        {copied ? <Check /> : <Copy />}
                         {copied ? __('Copied') : __('Copy token')}
                     </Button>
                     <Button

@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->string('environment');
             $table->string('token_hash')->unique();
             $table->timestamp('last_heartbeat_at')->nullable();

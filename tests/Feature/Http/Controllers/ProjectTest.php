@@ -70,6 +70,20 @@ it('validates the project payload', function (array $payload, string $field): vo
     ], 'name'],
 ]);
 
+it('rejects a duplicate project name', function (): void {
+    Project::factory()->create(['name' => 'Checkout API']);
+
+    $this->actingAs(User::factory()->create())
+        ->from(route('projects.index'))
+        ->post(route('projects.store'), [
+            'name' => 'Checkout API',
+            'environment' => 'staging',
+        ])
+        ->assertSessionHasErrors('name');
+
+    expect(Project::query()->count())->toBe(1);
+});
+
 it('regenerates the token of a project', function (): void {
     $user = User::factory()->create();
     $project = Project::factory()->create();

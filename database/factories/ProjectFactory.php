@@ -20,7 +20,7 @@ final class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->company(),
+            'name' => fake()->unique()->company(),
             'environment' => 'production',
             'token_hash' => Project::generateToken()['hash'],
             'last_heartbeat_at' => null,
