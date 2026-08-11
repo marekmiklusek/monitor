@@ -103,11 +103,6 @@ export default function IssueShow({
                                 <IssueStatusBadge status={issue.status} />
                             </div>
 
-                            {issue.message !== null && (
-                                <p className="text-sm text-muted-foreground">
-                                    {issue.message}
-                                </p>
-                            )}
                         </div>
 
                         <div className="flex gap-2">
@@ -126,6 +121,12 @@ export default function IssueShow({
                             ))}
                         </div>
                     </div>
+
+                    {issue.message !== null && (
+                        <p className="border-l-2 border-destructive/60 bg-destructive/10 py-2 pl-3 font-mono text-sm wrap-break-word text-foreground">
+                            {issue.message}
+                        </p>
+                    )}
 
                     <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
                         <div>
