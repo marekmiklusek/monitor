@@ -134,8 +134,8 @@ Registration is controlled by `FORTIFY_REGISTRATION_ENABLED`. The UI ships with 
 ## Testing
 
 ```bash
-composer test           # type coverage, tests at exactly 100% coverage, lint, static analysis
-php artisan test        # test suite only
+composer test                     # type coverage, tests at exactly 100% coverage, lint, static analysis
+./vendor/bin/pest --parallel      # test suite only
 ```
 
 The project enforces 100% code coverage, 100% type coverage, PHPStan at level max and Pint/Rector formatting.
