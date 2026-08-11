@@ -11,7 +11,7 @@ final readonly class ChangeIssueStatus
 {
     public function execute(Issue $issue, IssueStatus $status): Issue
     {
-        $issue->forceFill(['status' => $status])->save();
+        $issue->fill(['status' => $status])->save();
 
         return $issue;
     }

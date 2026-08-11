@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-pest()->tia()->locally();
+// pest()->tia()->locally();
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
@@ -20,6 +20,10 @@ pest()->extend(TestCase::class)
         Http::preventStrayRequests();
         Process::preventStrayProcesses();
         Sleep::fake();
+
+        config()->set('monitoring.channels', ['mail']);
+        config()->set('services.telegram-bot-api.token');
+        config()->set('monitoring.telegram_chat_id');
 
         Date::setTestNow(Date::now());
     })

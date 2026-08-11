@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Models\Project;
+use App\Notifications\AdminNotifiable;
 use App\Notifications\HeartbeatMissing;
 use App\Notifications\HeartbeatRecovered;
-use Illuminate\Support\Facades\Notification;
 
 final readonly class CheckHeartbeats
 {
@@ -35,7 +35,7 @@ final readonly class CheckHeartbeats
             return;
         }
 
-        $project->forceFill(['heartbeat_alerted_at' => now()])->save();
+        $project->fill(['heartbeat_alerted_at' => now()])->save();
 
         $this->notify(new HeartbeatMissing($project));
     }
@@ -46,14 +46,13 @@ final readonly class CheckHeartbeats
             return;
         }
 
-        $project->forceFill(['heartbeat_alerted_at' => null])->save();
+        $project->fill(['heartbeat_alerted_at' => null])->save();
 
         $this->notify(new HeartbeatRecovered($project));
     }
 
     private function notify(HeartbeatMissing|HeartbeatRecovered $notification): void
     {
-        Notification::route('mail', config()->string('monitoring.admin_email'))
-            ->notify($notification);
+        (new AdminNotifiable)->notify($notification);
     }
 }

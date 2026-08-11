@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use App\Notifications\SafeTelegramChannel;
+use Illuminate\Notifications\ChannelManager;
+use Illuminate\Support\Facades\Notification;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +29,10 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        Notification::resolved(function (ChannelManager $manager): void {
+            $manager->extend('telegram', fn (): SafeTelegramChannel => resolve(SafeTelegramChannel::class));
+        });
     }
 
     /**

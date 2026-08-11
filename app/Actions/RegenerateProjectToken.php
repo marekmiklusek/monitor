@@ -12,7 +12,7 @@ final readonly class RegenerateProjectToken
     {
         $token = Project::generateToken();
 
-        $project->forceFill(['token_hash' => $token['hash']])->save();
+        $project->fill(['token_hash' => $token['hash']])->save();
 
         return $token['plain'];
     }

@@ -12,6 +12,7 @@
     "require": {
         "php": "^8.4",
         "inertiajs/inertia-laravel": "^3.3.1",
+        "laravel-notification-channels/telegram": "^7.0",
         "laravel/fortify": "^1.37.3",
         "laravel/framework": "^13.24",
         "laravel/tinker": "^3.0.2",

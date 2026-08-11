@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\Date;
 
 final readonly class ProcessIngestedOccurrences
 {
-    public function __construct(private RecordIssueOccurrence $recordIssueOccurrence)
-    {
+    public function __construct(
+        private RecordIssueOccurrence $recordIssueOccurrence,
+        private QueueIssueNotifications $queueIssueNotifications,
+    ) {
         // ...
     }
 
@@ -21,7 +23,10 @@ final readonly class ProcessIngestedOccurrences
      */
     public function execute(Project $project, array $occurrences): void
     {
-        DB::transaction(function () use ($project, $occurrences): void {
+        /** @var array<int, array{issue_id: string, kind: string}> $notifications */
+        $notifications = [];
+
+        DB::transaction(function () use ($project, $occurrences, &$notifications): void {
             foreach ($occurrences as $occurrence) {
                 $rawType = $occurrence['type'] ?? null;
                 $rawOccurredAt = $occurrence['occurred_at'] ?? null;
@@ -31,13 +36,24 @@ final readonly class ProcessIngestedOccurrences
                 $occurredAt = Date::parse(is_string($rawOccurredAt) ? $rawOccurredAt : null);
 
                 if ($type === OccurrenceType::Heartbeat) {
-                    $project->forceFill(['last_heartbeat_at' => $occurredAt])->save();
+                    $project->fill(['last_heartbeat_at' => $occurredAt])->save();
 
                     continue;
                 }
 
-                $this->recordIssueOccurrence->execute($project, $type, $occurrence, $occurredAt);
+                $result = $this->recordIssueOccurrence->execute($project, $type, $occurrence, $occurredAt);
+
+                if ($result['notification'] !== null) {
+                    $notifications[] = [
+                        'issue_id' => $result['issue']->id,
+                        'kind' => $result['notification']->value,
+                    ];
+                }
             }
         });
+
+        if ($notifications !== []) {
+            $this->queueIssueNotifications->execute($project, $notifications);
+        }
     }
 }

@@ -1,6 +1,6 @@
 # Monitor
 
-A self-hosted monitoring hub for Laravel applications. Client projects install the companion [laravel-monitor-client](https://github.com/marekmiklusek/laravel-monitor-client) package, which reports exceptions, failed jobs, slow queries, logs and heartbeats to this central app. Incoming occurrences are grouped into issues, browsable in an admin UI, and silent projects trigger heartbeat alerts by mail.
+A self-hosted monitoring hub for Laravel applications. Client projects install the companion [laravel-monitor-client](https://github.com/marekmiklusek/laravel-monitor-client) package, which reports exceptions, failed jobs, slow queries, logs and heartbeats to this central app. Incoming occurrences are grouped into issues, browsable in an admin UI, and silent projects trigger notifications by mail or Telegram.
 
 Built with Laravel 13, Inertia v3 + React 19, Tailwind CSS 4 and Pest 5.
 
@@ -27,12 +27,30 @@ composer run dev
 
 | Env variable | Default | Purpose |
 | --- | --- | --- |
-| `MONITORING_ADMIN_EMAIL` | `admin@example.com` | Recipient of heartbeat alert and recovery mails |
+| `MONITORING_ADMIN_EMAIL` | `admin@example.com` | Recipient of notification mails |
+| `MONITORING_CHANNELS` | `mail` | Comma separated notification channels (`mail`, `telegram`) |
+| `MONITORING_ISSUE_NOTIFICATION_THROTTLE_MINUTES` | `15` | Minimum gap between issue notifications per project |
 | `MONITORING_HEARTBEAT_THRESHOLD_MINUTES` | `15` | Minutes without a heartbeat before a project counts as stale |
 | `MONITORING_RECENT_OCCURRENCE_MINUTES` | `30` | Window for highlighting recently seen issues in the inbox |
 | `APP_LOCALE` | `en` | Admin UI language (`en` or `cs`) |
 
-Mail must be configured (`MAIL_*`) for heartbeat notifications to be delivered.
+Mail must be configured (`MAIL_*`) for notifications to be delivered.
+
+### Telegram notifications
+
+Notifications can also go to Telegram alongside mail. Set up a bot once:
+
+1. Open a chat with [@BotFather](https://t.me/BotFather), send `/newbot` and follow the prompts. It replies with the bot token.
+2. Send any message to your new bot, then open `https://api.telegram.org/bot<TOKEN>/getUpdates` in a browser and read `result[0].message.chat.id`. For a group, add the bot to it first – group chat ids are negative.
+3. Add the three variables:
+
+```
+MONITORING_CHANNELS=mail,telegram
+TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
+MONITORING_TELEGRAM_CHAT_ID=987654321
+```
+
+If `telegram` is listed but the token or chat id is missing, the channel is skipped with a logged warning instead of failing. A failing Telegram API never blocks the mail channel either – the error is logged and the rest of the notification still goes out.
 
 ## Client package
 
@@ -83,9 +101,15 @@ Occurrences are grouped into issues by fingerprint:
 
 A new occurrence on a resolved issue reopens it. Ignored issues stay ignored. Each issue keeps its 50 most recent occurrences; older ones are pruned.
 
-## Heartbeat alerts
+## Notifications
 
-`monitor:check-heartbeats` runs every five minutes via the scheduler. A project whose last heartbeat is older than the threshold triggers a single mail alert; a recovery mail is sent once heartbeats resume. Make sure the scheduler is running:
+Every notification goes to the channels listed in `MONITORING_CHANNELS`.
+
+**Heartbeats.** `monitor:check-heartbeats` runs every five minutes. A project whose last heartbeat is older than the threshold triggers a single alert; a recovery notification follows once heartbeats resume.
+
+**Issues.** A first-ever occurrence of a fingerprint notifies as a new issue, and an occurrence on a resolved issue notifies as a regression. Repeat occurrences of an already open issue stay silent. Notifications are throttled to one per project per throttle window; anything raised inside that window is held and sent as a single digest by `monitor:flush-issue-notifications`, which also runs every five minutes.
+
+Both commands need the scheduler:
 
 ```bash
 php artisan schedule:work

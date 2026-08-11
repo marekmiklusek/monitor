@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 use App\Models\Project;
 use App\Actions\CheckHeartbeats;
+use App\Notifications\AdminNotifiable;
 use Illuminate\Testing\PendingCommand;
 use App\Notifications\HeartbeatMissing;
 use App\Notifications\HeartbeatRecovered;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Notifications\AnonymousNotifiable;
+
+beforeEach(function (): void {
+    config()->set('monitoring.channels', ['mail']);
+});
 
 it('alerts once when a project stops sending heartbeats', function (): void {
     Notification::fake();
@@ -87,9 +91,9 @@ it('sends notifications to the configured admin email', function (): void {
     resolve(CheckHeartbeats::class)->execute();
 
     Notification::assertSentTo(
-        new AnonymousNotifiable,
+        new AdminNotifiable,
         HeartbeatMissing::class,
-        fn (HeartbeatMissing $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['mail'] === 'ops@example.com',
+        fn (HeartbeatMissing $notification, array $channels, AdminNotifiable $notifiable): bool => $notifiable->routeNotificationForMail() === 'ops@example.com',
     );
 });
 
@@ -119,11 +123,11 @@ it('builds the outage mail message', function (): void {
         'last_heartbeat_at' => now()->subMinutes(20),
     ]);
 
-    $mail = new HeartbeatMissing($project)->toMail(new AnonymousNotifiable);
+    $mail = new HeartbeatMissing($project)->toMail(new AdminNotifiable);
 
     expect($mail->subject)->toBe('Heartbeat missing: Checkout API')
-        ->and(new HeartbeatMissing($project)->via(new AnonymousNotifiable))->toBe(['mail'])
-        ->and(new HeartbeatMissing($project)->toArray(new AnonymousNotifiable))
+        ->and(new HeartbeatMissing($project)->via(new AdminNotifiable))->toBe(['mail'])
+        ->and(new HeartbeatMissing($project)->toArray(new AdminNotifiable))
         ->toHaveKey('project_id', $project->id);
 });
 
@@ -134,11 +138,11 @@ it('builds the recovery mail message', function (): void {
         'last_heartbeat_at' => now(),
     ]);
 
-    $mail = new HeartbeatRecovered($project)->toMail(new AnonymousNotifiable);
+    $mail = new HeartbeatRecovered($project)->toMail(new AdminNotifiable);
 
     expect($mail->subject)->toBe('Heartbeat recovered: Checkout API')
-        ->and(new HeartbeatRecovered($project)->via(new AnonymousNotifiable))->toBe(['mail'])
-        ->and(new HeartbeatRecovered($project)->toArray(new AnonymousNotifiable))
+        ->and(new HeartbeatRecovered($project)->via(new AdminNotifiable))->toBe(['mail'])
+        ->and(new HeartbeatRecovered($project)->toArray(new AdminNotifiable))
         ->toHaveKey('project_id', $project->id);
 });
 
@@ -148,8 +152,8 @@ it('reports never as the last heartbeat when none was received', function (): vo
         'last_heartbeat_at' => null,
     ]);
 
-    expect(new HeartbeatMissing($project)->toArray(new AnonymousNotifiable))
+    expect(new HeartbeatMissing($project)->toArray(new AdminNotifiable))
         ->toHaveKey('last_heartbeat_at', null)
-        ->and(new HeartbeatRecovered($project)->toArray(new AnonymousNotifiable))
+        ->and(new HeartbeatRecovered($project)->toArray(new AdminNotifiable))
         ->toHaveKey('last_heartbeat_at', null);
 });

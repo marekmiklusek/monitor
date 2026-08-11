@@ -17,3 +17,7 @@ Schedule::command('db-backup:run')
 Schedule::command('monitor:check-heartbeats')
     ->everyFiveMinutes()
     ->onOneServer();
+
+Schedule::command('monitor:flush-issue-notifications')
+    ->everyFiveMinutes()
+    ->onOneServer();

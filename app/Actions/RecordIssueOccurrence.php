@@ -10,6 +10,7 @@ use App\Enums\IssueStatus;
 use App\Models\Occurrence;
 use Carbon\CarbonInterface;
 use App\Enums\OccurrenceType;
+use App\Enums\IssueNotificationKind;
 
 final readonly class RecordIssueOccurrence
 {
@@ -20,8 +21,9 @@ final readonly class RecordIssueOccurrence
 
     /**
      * @param  array<string, mixed>  $occurrence
+     * @return array{issue: Issue, notification: IssueNotificationKind|null}
      */
-    public function execute(Project $project, OccurrenceType $type, array $occurrence, CarbonInterface $occurredAt): Issue
+    public function execute(Project $project, OccurrenceType $type, array $occurrence, CarbonInterface $occurredAt): array
     {
         $fingerprint = $this->calculateOccurrenceFingerprint->execute($type, $occurrence);
 
@@ -30,9 +32,11 @@ final readonly class RecordIssueOccurrence
             'fingerprint' => $fingerprint,
         ]);
 
+        $notification = $this->notification($issue);
+
         $line = $occurrence['line'] ?? null;
 
-        $issue->forceFill([
+        $issue->fill([
             'type' => $type,
             'title' => $this->title($occurrence, $type),
             'message' => $this->string($occurrence, 'message'),
@@ -53,7 +57,21 @@ final readonly class RecordIssueOccurrence
 
         $this->pruneOccurrences($issue);
 
-        return $issue;
+        return [
+            'issue' => $issue,
+            'notification' => $notification,
+        ];
+    }
+
+    private function notification(Issue $issue): ?IssueNotificationKind
+    {
+        if (! $issue->exists) {
+            return IssueNotificationKind::NewIssue;
+        }
+
+        return $issue->status === IssueStatus::Resolved
+            ? IssueNotificationKind::Regression
+            : null;
     }
 
     private function status(Issue $issue): IssueStatus

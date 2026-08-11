@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('token_hash')->unique();
             $table->timestamp('last_heartbeat_at')->nullable();
             $table->timestamp('heartbeat_alerted_at')->nullable();
+            $table->timestamp('issues_notified_at')->nullable();
+            $table->json('pending_issue_notifications')->nullable();
             $table->timestamps();
         });
     }

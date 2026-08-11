@@ -79,7 +79,7 @@ it('reopens a resolved issue on a new occurrence', function (): void {
     resolve(ProcessIngestedOccurrences::class)->execute($project, [exceptionOccurrence()]);
 
     $issue = Issue::query()->sole();
-    $issue->forceFill(['status' => IssueStatus::Resolved])->save();
+    $issue->fill(['status' => IssueStatus::Resolved])->save();
 
     resolve(ProcessIngestedOccurrences::class)->execute($project, [exceptionOccurrence()]);
 
@@ -93,7 +93,7 @@ it('keeps an ignored issue ignored on a new occurrence', function (): void {
     resolve(ProcessIngestedOccurrences::class)->execute($project, [exceptionOccurrence()]);
 
     $issue = Issue::query()->sole();
-    $issue->forceFill(['status' => IssueStatus::Ignored])->save();
+    $issue->fill(['status' => IssueStatus::Ignored])->save();
 
     resolve(ProcessIngestedOccurrences::class)->execute($project, [exceptionOccurrence()]);
 
