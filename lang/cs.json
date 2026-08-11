@@ -148,7 +148,6 @@
     "No occurrences stored.": "Žádné uložené výskyty.",
     "Loading occurrence…": "Načítám výskyt…",
     "Select an occurrence to inspect it.": "Vyber výskyt pro zobrazení detailu.",
-    "Occurred at :date": "Nastalo :date",
     "Stack trace": "Stack trace",
     "No stack trace recorded.": "Žádný stack trace.",
     "Request": "Požadavek",
@@ -182,5 +181,9 @@
     ":count min ago": "před :count min",
     ":count h ago": "před :count h",
     ":count d ago": "před :count d",
-    ":count in last 24h": ":count za posledních 24 h"
+    ":count in last 24h": ":count za posledních 24 h",
+    "vendor": "vendor",
+    "Show :count vendor frames": "Zobrazit :count vendor řádků",
+    "Hide :count vendor frames": "Skrýt :count vendor řádků",
+    "Occurred at": "Nastalo"
 }

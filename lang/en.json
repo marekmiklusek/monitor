@@ -148,7 +148,6 @@
     "No occurrences stored.": "No occurrences stored.",
     "Loading occurrence…": "Loading occurrence…",
     "Select an occurrence to inspect it.": "Select an occurrence to inspect it.",
-    "Occurred at :date": "Occurred at :date",
     "Stack trace": "Stack trace",
     "No stack trace recorded.": "No stack trace recorded.",
     "Request": "Request",
@@ -182,5 +181,9 @@
     ":count min ago": ":count min ago",
     ":count h ago": ":count h ago",
     ":count d ago": ":count d ago",
-    ":count in last 24h": ":count in last 24h"
+    ":count in last 24h": ":count in last 24h",
+    "vendor": "vendor",
+    "Show :count vendor frames": "Show :count vendor frames",
+    "Hide :count vendor frames": "Hide :count vendor frames",
+    "Occurred at": "Occurred at"
 }

@@ -35,14 +35,17 @@ export function OccurrenceDetail({ occurrence }: { occurrence: Detail }) {
 
     return (
         <div className="space-y-6">
-            <p className="text-sm text-muted-foreground">
-                {__('Occurred at :date', {
-                    date: absoluteTime(occurrence.occurred_at),
-                })}
-            </p>
+            <div className="flex items-center gap-2 border-b pb-3 text-sm">
+                <span className="text-muted-foreground">
+                    {__('Occurred at')}
+                </span>
+                <span className="font-mono">
+                    {absoluteTime(occurrence.occurred_at)}
+                </span>
+            </div>
 
             <section className="space-y-2">
-                <h3 className="text-sm font-semibold">{__('Stack trace')}</h3>
+                <h3 className="text-sm font-medium">{__('Stack trace')}</h3>
                 <StackTrace stack={occurrence.payload.stack} />
             </section>
 
@@ -52,7 +55,7 @@ export function OccurrenceDetail({ occurrence }: { occurrence: Detail }) {
 
             {Object.keys(rest).length > 0 && (
                 <section className="space-y-2">
-                    <h3 className="text-sm font-semibold">{__('Context')}</h3>
+                    <h3 className="text-sm font-medium">{__('Context')}</h3>
                     <JsonBlock value={rest} />
                 </section>
             )}
@@ -60,7 +63,7 @@ export function OccurrenceDetail({ occurrence }: { occurrence: Detail }) {
             {Array.isArray(occurrence.payload.breadcrumbs) &&
                 occurrence.payload.breadcrumbs.length > 0 && (
                     <section className="space-y-2">
-                        <h3 className="text-sm font-semibold">
+                        <h3 className="text-sm font-medium">
                             {__('Breadcrumbs')}
                         </h3>
                         <div className="overflow-x-auto rounded-lg border">

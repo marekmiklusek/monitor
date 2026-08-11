@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { absoluteTime, relativeTime } from '@/lib/relative-time';
+import { shortenPath, splitClassName } from '@/lib/source-path';
 import { cn } from '@/lib/utils';
 import type {
     BreadcrumbItem,
@@ -64,9 +65,13 @@ export default function IssueShow({
         return () => controller.abort();
     }, [issue.id, selectedId]);
 
+    const title = splitClassName(issue.title);
+
+    const location = issue.file === null ? null : shortenPath(issue.file);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: __('Issues'), href: '/issues' },
-        { title: issue.title, href: `/issues/${issue.id}` },
+        { title: title.name, href: `/issues/${issue.id}` },
     ];
 
     const changeStatus = (status: IssueStatus) => {
@@ -84,10 +89,16 @@ export default function IssueShow({
             <div className="flex h-full flex-1 flex-col gap-6 p-4">
                 <header className="space-y-3 rounded-xl border p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2">
+                        <div className="min-w-0 space-y-1">
+                            {title.namespace !== '' && (
+                                <p className="truncate font-mono text-xs text-muted-foreground">
+                                    {title.namespace}
+                                </p>
+                            )}
+
+                            <div className="flex flex-wrap items-center gap-2">
                                 <h1 className="text-lg font-semibold">
-                                    {issue.title}
+                                    {title.name}
                                 </h1>
                                 <IssueStatusBadge status={issue.status} />
                             </div>
@@ -134,9 +145,21 @@ export default function IssueShow({
                                 {__('Location')}
                             </dt>
                             <dd className="font-mono text-xs break-all">
-                                {issue.file === null
-                                    ? '—'
-                                    : `${issue.file}:${issue.line ?? '?'}`}
+                                {location === null ? (
+                                    '—'
+                                ) : (
+                                    <>
+                                        <span className="text-muted-foreground">
+                                            {location.path}
+                                        </span>
+                                        {location.name}
+                                        {issue.line !== null && (
+                                            <span className="text-amber-600 dark:text-amber-400">
+                                                :{issue.line}
+                                            </span>
+                                        )}
+                                    </>
+                                )}
                             </dd>
                         </div>
 
@@ -169,7 +192,7 @@ export default function IssueShow({
 
                 <div className="grid gap-4 lg:grid-cols-[16rem_1fr]">
                     <aside className="space-y-2">
-                        <h2 className="text-sm font-semibold">
+                        <h2 className="text-sm font-medium">
                             {__('Recent occurrences')}
                         </h2>
 
@@ -211,7 +234,9 @@ export default function IssueShow({
 
                         {!loading && detail === null && (
                             <p className="text-sm text-muted-foreground">
-                                {__('Select an occurrence to inspect it.')}
+                                {occurrences.length === 0
+                                    ? __('No occurrences stored.')
+                                    : __('Select an occurrence to inspect it.')}
                             </p>
                         )}
 

@@ -29,7 +29,7 @@ export function ContextTable({
 
     return (
         <section className="space-y-2">
-            <h3 className="text-sm font-semibold">{title}</h3>
+            <h3 className="text-sm font-medium">{title}</h3>
             <div className="overflow-x-auto rounded-lg border">
                 <table className="w-full text-left text-xs">
                     <tbody>
