@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'admin_email' => env('MONITORING_ADMIN_EMAIL', 'admin@example.com'),
+    'admin_email' => (string) env('MONITORING_ADMIN_EMAIL', 'admin@example.com'),
 
     /*
     |--------------------------------------------------------------------------
@@ -40,7 +40,37 @@ return [
     |
     */
 
-    'telegram_chat_id' => env('MONITORING_TELEGRAM_CHAT_ID'),
+    'telegram_chat_id' => (string) env('MONITORING_TELEGRAM_CHAT_ID', ''),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ingest Limits
+    |--------------------------------------------------------------------------
+    |
+    | Requests per minute allowed per project, and the largest payload the
+    | ingest endpoint accepts before answering with 413.
+    |
+    */
+
+    'ingest_rate_limit' => (int) env('MONITORING_INGEST_RATE_LIMIT', 120),
+
+    'max_payload_kilobytes' => (int) env('MONITORING_MAX_PAYLOAD_KILOBYTES', 512),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Retention
+    |--------------------------------------------------------------------------
+    |
+    | Days after which resolved and ignored issues are pruned, and days after
+    | which occurrences are dropped regardless of the issue status.
+    |
+    */
+
+    'issue_retention_days' => (int) env('MONITORING_ISSUE_RETENTION_DAYS', 90),
+
+    'occurrence_retention_days' => (int) env('MONITORING_OCCURRENCE_RETENTION_DAYS', 30),
+
+    'prune_chunk_size' => (int) env('MONITORING_PRUNE_CHUNK_SIZE', 500),
 
     /*
     |--------------------------------------------------------------------------
@@ -51,7 +81,7 @@ return [
     |
     */
 
-    'heartbeat_threshold_minutes' => env('MONITORING_HEARTBEAT_THRESHOLD_MINUTES', 15),
+    'heartbeat_threshold_minutes' => (int) env('MONITORING_HEARTBEAT_THRESHOLD_MINUTES', 15),
 
     /*
     |--------------------------------------------------------------------------
@@ -62,7 +92,7 @@ return [
     |
     */
 
-    'recent_occurrence_minutes' => env('MONITORING_RECENT_OCCURRENCE_MINUTES', 30),
+    'recent_occurrence_minutes' => (int) env('MONITORING_RECENT_OCCURRENCE_MINUTES', 30),
 
     /*
     |--------------------------------------------------------------------------
@@ -74,6 +104,6 @@ return [
     |
     */
 
-    'issue_notification_throttle_minutes' => env('MONITORING_ISSUE_NOTIFICATION_THROTTLE_MINUTES', 15),
+    'issue_notification_throttle_minutes' => (int) env('MONITORING_ISSUE_NOTIFICATION_THROTTLE_MINUTES', 15),
 
 ];

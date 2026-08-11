@@ -21,6 +21,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['issue_id', 'occurred_at']);
+            $table->index('occurred_at');
         });
     }
 

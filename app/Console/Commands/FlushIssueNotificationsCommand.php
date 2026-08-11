@@ -6,15 +6,15 @@ namespace App\Console\Commands;
 
 use App\Models\Project;
 use Illuminate\Console\Command;
+use App\Actions\FlushIssueNotifications;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Attributes\Description;
-use App\Actions\FlushIssueNotifications as FlushIssueNotificationsAction;
 
 #[Signature('monitor:flush-issue-notifications')]
 #[Description('Send the issue notifications that were held back by the throttle window')]
-final class FlushIssueNotifications extends Command
+final class FlushIssueNotificationsCommand extends Command
 {
-    public function handle(FlushIssueNotificationsAction $flushIssueNotifications): int
+    public function handle(FlushIssueNotifications $flushIssueNotifications): int
     {
         Project::query()
             ->whereNotNull('pending_issue_notifications')

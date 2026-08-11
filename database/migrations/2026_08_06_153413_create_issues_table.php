@@ -30,6 +30,8 @@ return new class extends Migration
 
             $table->unique(['project_id', 'fingerprint']);
             $table->index(['project_id', 'status', 'last_seen_at']);
+            $table->index(['status', 'last_seen_at']);
+            $table->index('last_seen_at');
         });
     }
 

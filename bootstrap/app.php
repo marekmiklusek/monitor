@@ -7,9 +7,11 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\AuthenticateProject;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\PreventSearchIndexing;
+use App\Http\Middleware\LimitIngestPayloadSize;
 use App\Http\Middleware\EnsureRegistrationEnabled;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -33,6 +35,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'project.token' => AuthenticateProject::class,
         ]);
+
+        $middleware->prependToPriorityList(ThrottleRequests::class, AuthenticateProject::class);
+        $middleware->prependToPriorityList(AuthenticateProject::class, LimitIngestPayloadSize::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

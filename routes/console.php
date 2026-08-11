@@ -2,12 +2,7 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
-
-Artisan::command('playground', function (): void {
-    // ...
-});
 
 Schedule::command('db-backup:run')
     ->dailyAt('02:00')
@@ -21,3 +16,12 @@ Schedule::command('monitor:check-heartbeats')
 Schedule::command('monitor:flush-issue-notifications')
     ->everyFiveMinutes()
     ->onOneServer();
+
+Schedule::command('monitor:prune')
+    ->dailyAt('03:00')
+    ->onOneServer()
+    ->runInBackground();
+
+Schedule::command('queue:work --stop-when-empty --max-time=50')
+    ->everyMinute()
+    ->withoutOverlapping();
