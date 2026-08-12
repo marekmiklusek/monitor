@@ -1,3 +1,4 @@
+import { HeartbeatPulse } from '@/components/monitoring/heartbeat-pulse';
 import { useTranslations } from '@/hooks/use-translations';
 import { relativeTime } from '@/lib/relative-time';
 import { cn } from '@/lib/utils';
@@ -28,21 +29,14 @@ export function HeartbeatBadge({
     return (
         <span
             className={cn(
-                'inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-medium',
+                'inline-flex max-w-full items-center gap-2 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap',
                 STYLES[status],
             )}
         >
-            <span
-                className={cn(
-                    'size-1.5 rounded-full',
-                    status === 'ok' && 'bg-emerald-600',
-                    status === 'stale' && 'animate-pulse bg-red-600',
-                    status === 'missing' && 'bg-amber-600',
-                )}
-            />
+            <HeartbeatPulse status={status} />
             {__(LABELS[status])}
             {status !== 'missing' && (
-                <span className="opacity-70">
+                <span className="truncate opacity-70">
                     {relativeTime(lastHeartbeatAt, __)}
                 </span>
             )}

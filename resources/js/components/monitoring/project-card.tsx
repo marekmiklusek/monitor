@@ -16,9 +16,9 @@ export function ProjectCard({ project }: { project: DashboardProject }) {
             )}
         >
             <div className="flex items-start justify-between gap-3">
-                <div>
-                    <h2 className="font-semibold">{project.name}</h2>
-                    <p className="text-xs text-muted-foreground">
+                <div className="min-w-0">
+                    <h2 className="truncate font-semibold">{project.name}</h2>
+                    <p className="truncate text-xs text-muted-foreground">
                         {project.environment}
                     </p>
                 </div>

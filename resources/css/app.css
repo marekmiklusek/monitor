@@ -141,3 +141,27 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer components {
+    .heartbeat-pulse-trace {
+        stroke-dasharray: 6 26;
+        animation: heartbeat-trace 2s linear infinite;
+    }
+
+    @keyframes heartbeat-trace {
+        from {
+            stroke-dashoffset: 32;
+        }
+
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .heartbeat-pulse-trace {
+            stroke-dasharray: none;
+            animation: none;
+        }
+    }
+}
