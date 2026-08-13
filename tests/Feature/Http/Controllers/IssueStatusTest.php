@@ -19,7 +19,7 @@ it('changes the status of an issue', function (IssueStatus $status): void {
     $this->actingAs(User::factory()->create())
         ->from(route('issues.show', $issue))
         ->post(route('issues.status.store', $issue), ['status' => $status->value])
-        ->assertRedirect(route('issues.show', $issue));
+        ->assertRedirect(route('issues.index'));
 
     expect($issue->refresh()->status)->toBe($status);
 })->with(IssueStatus::cases());

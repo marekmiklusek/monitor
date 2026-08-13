@@ -20,6 +20,6 @@ final readonly class IssueStatusController
     {
         $this->changeIssueStatus->execute($issue, $request->status());
 
-        return back();
+        return to_route('issues.index');
     }
 }
