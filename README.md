@@ -7,7 +7,6 @@ Client projects install the companion [laravel-monitor-client](https://github.co
 - PHP 8.4
 - MySQL
 - Node.js (npm)
-- [Laravel Herd](https://herd.laravel.com) or any other local server
 
 ## Setup
 
@@ -27,9 +26,11 @@ composer dev
 | --- | --- | --- |
 | `MONITORING_ADMIN_EMAIL` | `admin@example.com` | Recipient of notification mails |
 | `MONITORING_CHANNELS` | `mail` | Comma separated notification channels (`mail`, `telegram`) |
-| `MONITORING_ISSUE_NOTIFICATION_THROTTLE_MINUTES` | `15` | Minimum gap between issue notifications per project |
+| `MONITORING_MAX_IMMEDIATE_NOTIFICATIONS_PER_MINUTE` | `20` | Cap on immediate notifications per project; the rest goes into the next digest |
+| `MONITORING_QUEUE_STALL_THRESHOLD_MINUTES` | `10` | Minutes a job may wait in the queue before the watchdog reports a stalled queue |
 | `MONITORING_HEARTBEAT_THRESHOLD_MINUTES` | `15` | Minutes without a heartbeat before a project counts as stale |
 | `MONITORING_RECENT_OCCURRENCE_MINUTES` | `30` | Window for highlighting recently seen issues in the inbox |
+| `MONITORING_TIMEZONE` | `Europe/Bratislava` | Timezone for dates written into notifications |
 | `APP_LOCALE` | `en` | Admin UI language (`en` or `cs`) |
 
 Mail must be configured (`MAIL_*`) for notifications to be delivered.
@@ -119,6 +120,8 @@ The heartbeat, digest and prune commands all need the scheduler running:
 ```bash
 php artisan schedule:work
 ```
+
+The scheduler also starts the queue worker every minute. Issue notifications are queued, so nothing is delivered without it. `monitor:check-queue-health` watches for that: when a job sits in the queue past `MONITORING_QUEUE_STALL_THRESHOLD_MINUTES`, or a job failed since the last check, it sends an alert outside the queue and notifies again once the queue drains.
 
 ## Admin UI
 
