@@ -90,7 +90,7 @@ it('labels the occurrence type on the issue inbox', function (): void {
 
     $page = visit(route('issues.index'));
 
-    $page->assertSee('Failed job')
+    $page->assertSee(__('Failed job'))
         ->assertDontSee('failed_job')
         ->assertNoJavaScriptErrors();
 });
