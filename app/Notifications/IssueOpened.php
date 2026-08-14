@@ -8,15 +8,15 @@ use App\Models\Issue;
 use App\Models\Project;
 use Illuminate\Bus\Queueable;
 use App\Enums\IssueNotificationKind;
-use App\Concerns\BuildsTelegramMessages;
 use Illuminate\Notifications\Notification;
+use App\Concerns\BuildsNotificationContent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use NotificationChannels\Telegram\TelegramMessage;
 
 final class IssueOpened extends Notification implements ShouldQueue
 {
-    use BuildsTelegramMessages;
+    use BuildsNotificationContent;
     use Queueable;
 
     public function __construct(

@@ -9,6 +9,7 @@ use App\Notifications\IssueOpened;
 use App\Notifications\QueueStalled;
 use Illuminate\Support\Facades\Log;
 use App\Enums\IssueNotificationKind;
+use Illuminate\Support\Facades\Date;
 use App\Notifications\QueueRecovered;
 use Illuminate\Support\Facades\Event;
 use App\Notifications\AdminNotifiable;
@@ -369,4 +370,24 @@ it('sends the queue notifications on the configured channels', function (): void
 
     expect(new QueueStalled([])->via(new AdminNotifiable))->toBe(['mail', 'telegram'])
         ->and((new QueueRecovered)->via(new AdminNotifiable))->toBe(['mail', 'telegram']);
+});
+
+it('writes the heartbeat time in the notification timezone', function (): void {
+    config()->set('monitoring.timezone', 'Europe/Bratislava');
+
+    $project = Project::factory()->create([
+        'last_heartbeat_at' => Date::parse('2026-08-14 16:34:26', 'UTC'),
+    ]);
+
+    $text = new HeartbeatMissing($project)->toTelegram(new AdminNotifiable)->toArray()['text'];
+
+    expect($text)->toContain('14.08.2026 18:34:26');
+});
+
+it('says never when a project has no heartbeat yet', function (): void {
+    $project = Project::factory()->create(['last_heartbeat_at' => null]);
+
+    $text = new HeartbeatMissing($project)->toTelegram(new AdminNotifiable)->toArray()['text'];
+
+    expect($text)->toContain('never');
 });

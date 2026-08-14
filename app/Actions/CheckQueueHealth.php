@@ -11,10 +11,13 @@ use App\Notifications\QueueStalled;
 use App\Notifications\QueueRecovered;
 use Illuminate\Support\Facades\Cache;
 use App\Notifications\AdminNotifiable;
+use App\Concerns\BuildsNotificationContent;
 use Illuminate\Support\Facades\Notification;
 
 final readonly class CheckQueueHealth
 {
+    use BuildsNotificationContent;
+
     /**
      * @return array{alerted: bool, recovered: bool, reasons: array<int, string>}
      */
@@ -51,6 +54,15 @@ final readonly class CheckQueueHealth
         $stalledSince = now()->subMinutes(
             config()->integer('monitoring.queue_stall_threshold_minutes'),
         );
+
+        $waiting = DB::table('jobs')
+            ->whereNull('reserved_at')
+            ->where('available_at', '<=', $stalledSince->getTimestamp())
+            ->count();
+
+        if ($waiting > 0) {
+            $reasons[] = "{$waiting} job(s) waiting in the queue since before {$this->localTime($stalledSince)}.";
+        }
 
         $stalled = Project::query()
             ->whereNotNull('pending_issue_notifications')

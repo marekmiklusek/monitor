@@ -6,14 +6,14 @@ namespace App\Notifications;
 
 use App\Models\Project;
 use Illuminate\Bus\Queueable;
-use App\Concerns\BuildsTelegramMessages;
 use Illuminate\Notifications\Notification;
+use App\Concerns\BuildsNotificationContent;
 use Illuminate\Notifications\Messages\MailMessage;
 use NotificationChannels\Telegram\TelegramMessage;
 
 final class HeartbeatRecovered extends Notification
 {
-    use BuildsTelegramMessages;
+    use BuildsNotificationContent;
     use Queueable;
 
     public function __construct(private readonly Project $project)
@@ -31,7 +31,7 @@ final class HeartbeatRecovered extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $lastHeartbeat = $this->project->last_heartbeat_at?->toDateTimeString() ?? 'never';
+        $lastHeartbeat = $this->localTime($this->project->last_heartbeat_at);
 
         return (new MailMessage)
             ->subject("Heartbeat recovered: {$this->project->name}")

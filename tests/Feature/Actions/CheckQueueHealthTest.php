@@ -9,6 +9,7 @@ use App\Enums\OccurrenceType;
 use App\Actions\CheckQueueHealth;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\QueueStalled;
+use Illuminate\Support\Facades\Date;
 use App\Notifications\QueueRecovered;
 use Illuminate\Support\Facades\Cache;
 use App\Notifications\AdminNotifiable;
@@ -70,6 +71,101 @@ it('alerts when a notification has been pending for too long', function (): void
 
     expect($result['alerted'])->toBeTrue()
         ->and($result['reasons'][0])->toContain('Checkout API');
+});
+
+function queueJob(int $availableAt, ?int $reservedAt = null): void
+{
+    DB::table('jobs')->insert([
+        'queue' => 'default',
+        'payload' => '{}',
+        'attempts' => 0,
+        'reserved_at' => $reservedAt,
+        'available_at' => $availableAt,
+        'created_at' => $availableAt,
+    ]);
+}
+
+it('alerts when a job has been waiting in the queue while nothing is pending', function (): void {
+    Notification::fake();
+
+    Project::factory()->create();
+
+    queueJob(now()->subMinutes(30)->getTimestamp());
+
+    $result = resolve(CheckQueueHealth::class)->execute();
+
+    Notification::assertSentTimes(QueueStalled::class, 1);
+
+    expect($result['alerted'])->toBeTrue()
+        ->and($result['reasons'][0])->toContain('1 job(s) waiting in the queue')
+        ->and(Project::query()->whereNotNull('pending_issue_notifications')->exists())->toBeFalse();
+});
+
+it('alerts when a real issue notification is left unprocessed by the worker', function (): void {
+    config()->set('queue.default', 'database');
+
+    $project = Project::factory()->create();
+
+    resolve(ProcessIngestedOccurrences::class)->execute($project, [stalledOccurrence()]);
+
+    expect(DB::table('jobs')->count())->toBe(1)
+        ->and($project->refresh()->pending_issue_notifications)->toBeNull();
+
+    Notification::fake();
+
+    $this->travel(30)->minutes();
+
+    $result = resolve(CheckQueueHealth::class)->execute();
+
+    Notification::assertSentTimes(QueueStalled::class, 1);
+
+    expect($result['reasons'][0])->toContain('1 job(s) waiting in the queue');
+});
+
+it('writes the stall time in the notification timezone', function (): void {
+    config()->set('monitoring.timezone', 'Europe/Bratislava');
+    config()->set('monitoring.queue_stall_threshold_minutes', 10);
+
+    Date::setTestNow(Date::parse('2026-08-14 16:34:26', 'UTC'));
+
+    Notification::fake();
+
+    queueJob(now()->subHour()->getTimestamp());
+
+    $result = resolve(CheckQueueHealth::class)->execute();
+
+    expect($result['reasons'][0])->toContain('14.08.2026 18:24:26')
+        ->not->toContain('16:24:26');
+});
+
+it('ignores a job that only just became available', function (): void {
+    Notification::fake();
+
+    queueJob(now()->subMinute()->getTimestamp());
+
+    resolve(CheckQueueHealth::class)->execute();
+
+    Notification::assertNothingSent();
+});
+
+it('ignores a job that is delayed into the future', function (): void {
+    Notification::fake();
+
+    queueJob(now()->addHour()->getTimestamp());
+
+    resolve(CheckQueueHealth::class)->execute();
+
+    Notification::assertNothingSent();
+});
+
+it('ignores a job a worker has already reserved', function (): void {
+    Notification::fake();
+
+    queueJob(now()->subMinutes(30)->getTimestamp(), now()->subSeconds(5)->getTimestamp());
+
+    resolve(CheckQueueHealth::class)->execute();
+
+    Notification::assertNothingSent();
 });
 
 it('alerts when jobs failed in the last hour', function (): void {
@@ -188,6 +284,7 @@ it('does not notify about a recovery when the cache was cleared', function (): v
 
 it('stays quiet about a batch that is only waiting for the next flush', function (): void {
     config()->set('monitoring.max_immediate_notifications_per_minute', 1);
+    config()->set('monitoring.queue_stall_threshold_minutes', 10);
 
     $project = Project::factory()->create();
 

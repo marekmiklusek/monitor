@@ -126,4 +126,17 @@ return [
 
     'queue_stall_threshold_minutes' => (int) env('MONITORING_QUEUE_STALL_THRESHOLD_MINUTES', 10),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Notification Timezone
+    |--------------------------------------------------------------------------
+    |
+    | Timezone used for the dates written into notifications. The application
+    | itself runs on UTC; this only decides how a moment is spelled out for
+    | the person reading the alert.
+    |
+    */
+
+    'timezone' => (string) env('MONITORING_TIMEZONE', 'Europe/Bratislava'),
+
 ];

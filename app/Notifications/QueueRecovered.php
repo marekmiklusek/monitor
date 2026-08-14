@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
-use App\Concerns\BuildsTelegramMessages;
 use Illuminate\Notifications\Notification;
+use App\Concerns\BuildsNotificationContent;
 use Illuminate\Notifications\Messages\MailMessage;
 use NotificationChannels\Telegram\TelegramMessage;
 
 final class QueueRecovered extends Notification
 {
-    use BuildsTelegramMessages;
+    use BuildsNotificationContent;
 
     /**
      * @return array<int, string>
