@@ -22,14 +22,15 @@ it('changes the status of an issue', function (IssueStatus $status): void {
         ->assertRedirect(route('issues.index'));
 
     expect($issue->refresh()->status)->toBe($status);
-})->with(IssueStatus::cases());
+})->with([IssueStatus::Resolved, IssueStatus::Ignored]);
 
-it('reopens a resolved issue', function (): void {
+it('reopens a resolved issue and stays on the detail', function (): void {
     $issue = Issue::factory()->resolved()->create();
 
     $this->actingAs(User::factory()->create())
         ->from(route('issues.show', $issue))
-        ->post(route('issues.status.store', $issue), ['status' => IssueStatus::Open->value]);
+        ->post(route('issues.status.store', $issue), ['status' => IssueStatus::Open->value])
+        ->assertRedirect(route('issues.show', $issue));
 
     expect($issue->refresh()->status)->toBe(IssueStatus::Open);
 });

@@ -75,7 +75,11 @@ export default function IssueShow({
     ];
 
     const changeStatus = (status: IssueStatus) => {
-        router.post(`/issues/${issue.id}/status`, { status });
+        router.post(
+            `/issues/${issue.id}/status`,
+            { status },
+            { preserveScroll: status === 'open' },
+        );
     };
 
     return (
