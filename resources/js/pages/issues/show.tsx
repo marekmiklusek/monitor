@@ -122,7 +122,7 @@ export default function IssueShow({
                     </div>
 
                     {issue.message !== null && (
-                        <p className="border-l-2 border-destructive/60 bg-destructive/10 py-2 pl-3 font-mono text-sm wrap-break-word text-foreground">
+                        <p className="rounded-r-md border-l-4 border-destructive bg-destructive/10 py-2 pr-3 pl-4 font-mono text-sm wrap-break-word text-destructive-foreground">
                             {issue.message}
                         </p>
                     )}
@@ -140,28 +140,24 @@ export default function IssueShow({
                             </dd>
                         </div>
 
-                        <div>
-                            <dt className="text-xs text-muted-foreground">
-                                {__('Location')}
-                            </dt>
-                            <dd className="font-mono text-xs break-all">
-                                {location === null ? (
-                                    '—'
-                                ) : (
-                                    <>
-                                        <span className="text-muted-foreground">
-                                            {location.path}
+                        {location !== null && (
+                            <div>
+                                <dt className="text-xs text-muted-foreground">
+                                    {__('Location')}
+                                </dt>
+                                <dd className="font-mono text-xs break-all">
+                                    <span className="text-muted-foreground">
+                                        {location.path}
+                                    </span>
+                                    {location.name}
+                                    {issue.line !== null && (
+                                        <span className="text-amber-600 dark:text-amber-400">
+                                            :{issue.line}
                                         </span>
-                                        {location.name}
-                                        {issue.line !== null && (
-                                            <span className="text-amber-600 dark:text-amber-400">
-                                                :{issue.line}
-                                            </span>
-                                        )}
-                                    </>
-                                )}
-                            </dd>
-                        </div>
+                                    )}
+                                </dd>
+                            </div>
+                        )}
 
                         <div>
                             <dt className="text-xs text-muted-foreground">
@@ -190,7 +186,7 @@ export default function IssueShow({
                     </dl>
                 </header>
 
-                <div className="grid gap-4 lg:grid-cols-[16rem_1fr]">
+                <div className="grid gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
                     <aside className="space-y-2">
                         <h2 className="text-sm font-medium">
                             {__('Recent occurrences')}
@@ -225,7 +221,7 @@ export default function IssueShow({
                         )}
                     </aside>
 
-                    <section className="rounded-xl border p-4">
+                    <section className="min-w-0 rounded-xl border p-4">
                         {loading && (
                             <p className="text-sm text-muted-foreground">
                                 {__('Loading occurrence…')}

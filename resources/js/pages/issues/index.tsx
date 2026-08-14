@@ -9,9 +9,17 @@ import type {
     BreadcrumbItem,
     IssueFilters,
     IssueRow,
+    OccurrenceType,
     Paginated,
     ProjectSummary,
 } from '@/types';
+
+const TYPE_LABELS: Record<OccurrenceType, string> = {
+    exception: 'Exception',
+    failed_job: 'Failed job',
+    slow_query: 'Slow query',
+    log: 'Log',
+};
 
 const STATUS_TABS: Array<{ value: IssueFilters['status']; label: string }> = [
     { value: 'open', label: 'Open' },
@@ -157,8 +165,11 @@ export default function IssuesIndex({
                                                 {issue.project.environment}
                                             </span>
                                         </td>
-                                        <td className="px-3 py-2 font-mono text-xs whitespace-nowrap">
-                                            {issue.type}
+                                        <td className="px-3 py-2 text-xs whitespace-nowrap">
+                                            {__(
+                                                TYPE_LABELS[issue.type] ??
+                                                    issue.type,
+                                            )}
                                         </td>
                                         <td className="max-w-md px-3 py-2">
                                             <Link

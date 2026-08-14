@@ -188,5 +188,9 @@
     "Occurred at": "Nastalo",
     "Issue reopened.": "Problém byl znovu otevřen.",
     "Issue resolved.": "Problém byl vyřešen.",
-    "Issue ignored.": "Problém byl ignorován."
+    "Issue ignored.": "Problém byl ignorován.",
+    "Exception": "Výjimka",
+    "Failed job": "Selhaná úloha",
+    "Slow query": "Pomalý dotaz",
+    "Log": "Log"
 }

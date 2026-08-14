@@ -63,6 +63,10 @@ function parseFrame(raw: unknown): Frame {
     };
 }
 
+export function hasFrames(stack: unknown): boolean {
+    return toFrames(stack).length > 0;
+}
+
 function toFrames(stack: unknown): Frame[] {
     if (Array.isArray(stack)) {
         return stack.map(parseFrame);

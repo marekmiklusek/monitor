@@ -75,7 +75,7 @@ function highlight(json: string): ReactNode[] {
 
 export function JsonBlock({ value }: { value: unknown }) {
     return (
-        <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs">
+        <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs wrap-anywhere whitespace-pre-wrap">
             {highlight(JSON.stringify(value, null, 2))}
         </pre>
     );

@@ -188,5 +188,9 @@
     "Occurred at": "Occurred at",
     "Issue reopened.": "Issue reopened.",
     "Issue resolved.": "Issue resolved.",
-    "Issue ignored.": "Issue ignored."
+    "Issue ignored.": "Issue ignored.",
+    "Exception": "Exception",
+    "Failed job": "Failed job",
+    "Slow query": "Slow query",
+    "Log": "Log"
 }

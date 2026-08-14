@@ -2,12 +2,7 @@ export type HeartbeatStatus = 'ok' | 'stale' | 'missing';
 
 export type IssueStatus = 'open' | 'resolved' | 'ignored';
 
-export type OccurrenceType =
-    | 'exception'
-    | 'failed_job'
-    | 'slow_query'
-    | 'heartbeat'
-    | 'log';
+export type OccurrenceType = 'exception' | 'failed_job' | 'slow_query' | 'log';
 
 export interface ProjectSummary {
     id: string;
