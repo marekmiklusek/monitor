@@ -49,7 +49,7 @@ final class IssueOpened extends Notification implements ShouldQueue
         }
 
         if ($this->issue->file !== null) {
-            $mail->line("{$this->issue->file}:{$this->issue->line}");
+            $mail->line($this->sourcePath($this->issue->file, $this->issue->line));
         }
 
         return $mail->action('View issue', route('issues.show', $this->issue));
@@ -72,7 +72,7 @@ final class IssueOpened extends Notification implements ShouldQueue
         }
 
         if ($this->issue->file !== null) {
-            $lines[] = $this->escapeMarkdown("{$this->issue->file}:{$this->issue->line}");
+            $lines[] = $this->escapeMarkdown($this->sourcePath($this->issue->file, $this->issue->line));
         }
 
         return TelegramMessage::create()

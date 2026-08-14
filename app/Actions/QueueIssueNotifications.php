@@ -18,12 +18,20 @@ final readonly class QueueIssueNotifications
      */
     public function execute(Project $project, array $events): void
     {
-        $pending = collect([...$project->pending_issue_notifications ?? [], ...$events])
-            ->keyBy('issue_id')
-            ->values()
-            ->all();
+        $existing = collect($project->pending_issue_notifications ?? [])->keyBy('issue_id');
 
-        $project->fill(['pending_issue_notifications' => $pending])->save();
+        $queuedAt = now()->toIso8601String();
+
+        $pending = collect($events)
+            ->keyBy('issue_id')
+            ->map(fn (array $event, string $issueId): array => [
+                ...$event,
+                'queued_at' => $existing->get($issueId)['queued_at'] ?? $queuedAt,
+            ]);
+
+        $project->fill([
+            'pending_issue_notifications' => $existing->merge($pending)->values()->all(),
+        ])->save();
 
         $this->flushIssueNotifications->execute($project);
     }

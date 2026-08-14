@@ -17,6 +17,10 @@ Schedule::command('monitor:flush-issue-notifications')
     ->everyFiveMinutes()
     ->onOneServer();
 
+Schedule::command('monitor:check-queue-health')
+    ->everyFiveMinutes()
+    ->onOneServer();
+
 Schedule::command('monitor:prune')
     ->dailyAt('03:00')
     ->onOneServer()

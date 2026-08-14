@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property-read string $token_hash
  * @property-read CarbonInterface|null $last_heartbeat_at
  * @property-read CarbonInterface|null $heartbeat_alerted_at
- * @property-read array<int, array{issue_id: string, kind: string}>|null $pending_issue_notifications
+ * @property-read array<int, array{issue_id: string, kind: string, queued_at?: string}>|null $pending_issue_notifications
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  * @property-read int $open_issues_count

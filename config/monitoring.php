@@ -111,4 +111,19 @@ return [
 
     'max_immediate_notifications_per_minute' => (int) env('MONITORING_MAX_IMMEDIATE_NOTIFICATIONS_PER_MINUTE', 20),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Queue Stall Threshold
+    |--------------------------------------------------------------------------
+    |
+    | Minutes an issue notification may sit in the pending list before the
+    | queue is considered stalled. Issue notifications are queued, so a
+    | stopped worker would otherwise silence the monitoring itself. Keep
+    | this above the flush schedule so a rate limited batch waiting for
+    | the next cron run does not trigger the watchdog.
+    |
+    */
+
+    'queue_stall_threshold_minutes' => (int) env('MONITORING_QUEUE_STALL_THRESHOLD_MINUTES', 10),
+
 ];

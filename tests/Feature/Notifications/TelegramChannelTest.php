@@ -6,8 +6,10 @@ use App\Models\Issue;
 use App\Models\Project;
 use App\Notifications\IssueDigest;
 use App\Notifications\IssueOpened;
+use App\Notifications\QueueStalled;
 use Illuminate\Support\Facades\Log;
 use App\Enums\IssueNotificationKind;
+use App\Notifications\QueueRecovered;
 use Illuminate\Support\Facades\Event;
 use App\Notifications\AdminNotifiable;
 use App\Notifications\HeartbeatMissing;
@@ -104,7 +106,39 @@ it('builds a telegram message for a new issue', function (): void {
     expect($text)->toContain('🆕 *New issue*')
         ->toContain('RuntimeException')
         ->toContain('Order failed')
-        ->toContain('/app/Orders.php:42');
+        ->toContain('app/Orders.php:42');
+});
+
+it('shortens a long hosting path in the telegram message', function (): void {
+    $project = Project::factory()->create();
+
+    $issue = Issue::factory()->create([
+        'project_id' => $project->id,
+        'file' => '/data/7/7/77941b09-b3c1-4024-a9cb-91e72006b433/wellmall.webotvurcidev.cz/www/vendor/psy/psysh/src/ExecutionClosure.php',
+        'line' => 41,
+    ]);
+
+    $text = new IssueOpened($project, $issue, IssueNotificationKind::NewIssue)
+        ->toTelegram(new AdminNotifiable)
+        ->toArray()['text'];
+
+    expect($text)->toContain('psy/psysh/src/ExecutionClosure.php:41')
+        ->not->toContain('77941b09');
+});
+
+it('shortens a long hosting path in the mail message', function (): void {
+    $project = Project::factory()->create();
+
+    $issue = Issue::factory()->create([
+        'project_id' => $project->id,
+        'file' => '/data/7/7/77941b09-b3c1-4024-a9cb-91e72006b433/wellmall.webotvurcidev.cz/www/vendor/psy/psysh/src/ExecutionClosure.php',
+        'line' => 41,
+    ]);
+
+    $mail = new IssueOpened($project, $issue, IssueNotificationKind::NewIssue)
+        ->toMail(new AdminNotifiable);
+
+    expect($mail->introLines)->toContain('psy/psysh/src/ExecutionClosure.php:41');
 });
 
 it('marks a regression in the telegram message', function (): void {
@@ -217,7 +251,7 @@ it('builds a mail message for a new issue', function (): void {
 
     expect($mail->subject)->toBe('New issue: RuntimeException')
         ->and($mail->introLines)->toContain('Order failed')
-        ->and($mail->introLines)->toContain('/app/Orders.php:42');
+        ->and($mail->introLines)->toContain('app/Orders.php:42');
 });
 
 it('titles a regression mail differently', function (): void {
@@ -295,4 +329,44 @@ it('still delivers the mail when telegram is down', function (): void {
     expect($sentMails)->toBe(1)
         ->and($warnings)->toBe(1)
         ->and($project->refresh()->heartbeat_alerted_at)->not->toBeNull();
+});
+
+it('builds a telegram message for a stalled queue', function (): void {
+    $text = new QueueStalled(['Issue notifications stuck in the queue for Checkout API.'])
+        ->toTelegram(new AdminNotifiable)
+        ->toArray()['text'];
+
+    expect($text)->toContain('🚨 *Queue stalled*')
+        ->toContain('Checkout API');
+});
+
+it('builds a mail message for a stalled queue', function (): void {
+    $mail = new QueueStalled(['2 job(s) failed in the last hour.'])->toMail(new AdminNotifiable);
+
+    expect($mail->subject)->toBe('Queue stalled: issue notifications are not going out')
+        ->and($mail->introLines)->toContain('- 2 job(s) failed in the last hour.');
+});
+
+it('exposes the reasons in the stalled array representation', function (): void {
+    $payload = new QueueStalled(['Broken.'])->toArray(new AdminNotifiable);
+
+    expect($payload)->toBe(['reasons' => ['Broken.']]);
+});
+
+it('builds the messages for a recovered queue', function (): void {
+    $notification = new QueueRecovered;
+
+    $text = $notification->toTelegram(new AdminNotifiable)->toArray()['text'];
+
+    expect($text)->toContain('✅ *Queue recovered*')
+        ->and($notification->toMail(new AdminNotifiable)->subject)
+        ->toBe('Queue recovered: issue notifications are going out again')
+        ->and($notification->toArray(new AdminNotifiable))->toBeEmpty();
+});
+
+it('sends the queue notifications on the configured channels', function (): void {
+    config()->set('monitoring.channels', ['mail', 'telegram']);
+
+    expect(new QueueStalled([])->via(new AdminNotifiable))->toBe(['mail', 'telegram'])
+        ->and((new QueueRecovered)->via(new AdminNotifiable))->toBe(['mail', 'telegram']);
 });

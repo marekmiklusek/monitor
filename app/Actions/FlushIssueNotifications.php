@@ -38,7 +38,7 @@ final readonly class FlushIssueNotifications
     }
 
     /**
-     * @param  array<int, array{issue_id: string, kind: string}>  $pending
+     * @param  array<int, array{issue_id: string, kind: string, queued_at?: string}>  $pending
      * @return array<int, array{issue: Issue, kind: IssueNotificationKind}>
      */
     private function entries(array $pending): array
