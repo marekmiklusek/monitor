@@ -46,6 +46,7 @@ final class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'flash' => $request->session()->get('flash'),
             'locale' => App::getLocale(),
             'translations' => Lang::getLoader()->load(App::getLocale(), '*', '*'),
         ];

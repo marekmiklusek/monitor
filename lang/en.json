@@ -185,5 +185,8 @@
     "vendor": "vendor",
     "Show :count vendor frames": "Show :count vendor frames",
     "Hide :count vendor frames": "Hide :count vendor frames",
-    "Occurred at": "Occurred at"
+    "Occurred at": "Occurred at",
+    "Issue reopened.": "Issue reopened.",
+    "Issue resolved.": "Issue resolved.",
+    "Issue ignored.": "Issue ignored."
 }

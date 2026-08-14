@@ -185,5 +185,8 @@
     "vendor": "vendor",
     "Show :count vendor frames": "Zobrazit :count vendor řádků",
     "Hide :count vendor frames": "Skrýt :count vendor řádků",
-    "Occurred at": "Nastalo"
+    "Occurred at": "Nastalo",
+    "Issue reopened.": "Problém byl znovu otevřen.",
+    "Issue resolved.": "Problém byl vyřešen.",
+    "Issue ignored.": "Problém byl ignorován."
 }

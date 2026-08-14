@@ -20,6 +20,19 @@ it('shares the czech translations when the locale is cs', function (): void {
         );
 });
 
+it('shares no flash message by default', function (): void {
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('flash', null));
+});
+
+it('shares the flashed message', function (): void {
+    $this->actingAs(User::factory()->create())
+        ->withSession(['flash' => 'Issue resolved.'])
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('flash', 'Issue resolved.'));
+});
+
 it('ships a czech translation for every english key', function (): void {
     /** @var array<string, string> $english */
     $english = json_decode((string) file_get_contents(lang_path('en.json')), true);
