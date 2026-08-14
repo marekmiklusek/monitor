@@ -17,6 +17,10 @@ use Illuminate\Testing\PendingCommand;
 use App\Actions\ProcessIngestedOccurrences;
 use Illuminate\Support\Facades\Notification;
 
+beforeEach(function (): void {
+    config()->set('monitoring.queue_stall_threshold_minutes', 10);
+});
+
 /**
  * @param  array<string, mixed>  $overrides
  * @return array<string, mixed>
@@ -124,7 +128,6 @@ it('alerts when a real issue notification is left unprocessed by the worker', fu
 
 it('writes the stall time in the notification timezone', function (): void {
     config()->set('monitoring.timezone', 'Europe/Bratislava');
-    config()->set('monitoring.queue_stall_threshold_minutes', 10);
 
     Date::setTestNow(Date::parse('2026-08-14 16:34:26', 'UTC'));
 
@@ -220,6 +223,71 @@ it('does not repeat the alert while the problem lasts', function (): void {
     expect($result['alerted'])->toBeFalse();
 });
 
+it('alerts only once when a stalled queue is checked twice in a row', function (): void {
+    Notification::fake();
+
+    queueJob(now()->subMinutes(30)->getTimestamp());
+
+    resolve(CheckQueueHealth::class)->execute();
+
+    expect(Cache::has('queue-health:alerted'))->toBeTrue();
+
+    $this->travel(2)->minutes();
+
+    $result = resolve(CheckQueueHealth::class)->execute();
+
+    Notification::assertSentTimes(QueueStalled::class, 1);
+
+    expect($result['alerted'])->toBeFalse()
+        ->and($result['reasons'])->not->toBeEmpty();
+});
+
+it('alerts only once when another job piles up while the queue is stalled', function (): void {
+    Notification::fake();
+
+    queueJob(now()->subMinutes(30)->getTimestamp());
+
+    resolve(CheckQueueHealth::class)->execute();
+
+    $this->travel(2)->minutes();
+
+    queueJob(now()->subMinutes(30)->getTimestamp());
+
+    $result = resolve(CheckQueueHealth::class)->execute();
+
+    Notification::assertSentTimes(QueueStalled::class, 1);
+
+    expect($result['alerted'])->toBeFalse()
+        ->and($result['reasons'][0])->toContain('2 job(s) waiting in the queue');
+});
+
+it('recovers once the queue drains even though a job failed during the outage', function (): void {
+    Notification::fake();
+
+    queueJob(now()->subMinutes(30)->getTimestamp());
+
+    DB::table('failed_jobs')->insert([
+        'uuid' => (string) Str::uuid(),
+        'connection' => 'database',
+        'queue' => 'default',
+        'payload' => '{}',
+        'exception' => 'Worker was down',
+        'failed_at' => now(),
+    ]);
+
+    resolve(CheckQueueHealth::class)->execute();
+
+    Notification::assertSentTimes(QueueStalled::class, 1);
+
+    DB::table('jobs')->delete();
+
+    $result = resolve(CheckQueueHealth::class)->execute();
+
+    Notification::assertSentTimes(QueueRecovered::class, 1);
+
+    expect($result['recovered'])->toBeTrue();
+});
+
 it('repeats the alert once the reminder window passes', function (): void {
     Notification::fake();
 
@@ -284,7 +352,6 @@ it('does not notify about a recovery when the cache was cleared', function (): v
 
 it('stays quiet about a batch that is only waiting for the next flush', function (): void {
     config()->set('monitoring.max_immediate_notifications_per_minute', 1);
-    config()->set('monitoring.queue_stall_threshold_minutes', 10);
 
     $project = Project::factory()->create();
 

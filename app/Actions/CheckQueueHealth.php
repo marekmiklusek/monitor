@@ -33,13 +33,13 @@ final readonly class CheckQueueHealth
             ];
         }
 
-        if (Cache::has('queue-health:alerted')) {
+        if (! Cache::add('queue-health:alerted', true, now()->addHour())) {
             return ['alerted' => false, 'recovered' => false, 'reasons' => $reasons];
         }
 
-        Notification::sendNow(new AdminNotifiable, new QueueStalled($reasons));
+        Cache::put('queue-health:failed-jobs-seen-at', now(), now()->addDay());
 
-        Cache::put('queue-health:alerted', true, now()->addHour());
+        Notification::sendNow(new AdminNotifiable, new QueueStalled($reasons));
 
         return ['alerted' => true, 'recovered' => false, 'reasons' => $reasons];
     }
@@ -75,10 +75,14 @@ final readonly class CheckQueueHealth
             $reasons[] = "Issue notifications stuck in the queue for {$names}.";
         }
 
-        $failed = DB::table('failed_jobs')->where('failed_at', '>', now()->subHour())->count();
+        $seenAt = Cache::get('queue-health:failed-jobs-seen-at');
+
+        $failedSince = $seenAt instanceof CarbonInterface ? $seenAt : now()->subHour();
+
+        $failed = DB::table('failed_jobs')->where('failed_at', '>', $failedSince)->count();
 
         if ($failed > 0) {
-            $reasons[] = "{$failed} job(s) failed in the last hour.";
+            $reasons[] = "{$failed} job(s) failed since {$this->localTime($failedSince)}.";
         }
 
         return $reasons;
@@ -99,6 +103,8 @@ final readonly class CheckQueueHealth
 
     private function recover(): bool
     {
+        Cache::forget('queue-health:failed-jobs-seen-at');
+
         if (! Cache::pull('queue-health:alerted')) {
             return false;
         }
