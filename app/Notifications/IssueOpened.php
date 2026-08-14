@@ -10,10 +10,11 @@ use Illuminate\Bus\Queueable;
 use App\Enums\IssueNotificationKind;
 use App\Concerns\BuildsTelegramMessages;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use NotificationChannels\Telegram\TelegramMessage;
 
-final class IssueOpened extends Notification
+final class IssueOpened extends Notification implements ShouldQueue
 {
     use BuildsTelegramMessages;
     use Queueable;

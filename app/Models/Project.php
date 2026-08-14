@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property-read string $token_hash
  * @property-read CarbonInterface|null $last_heartbeat_at
  * @property-read CarbonInterface|null $heartbeat_alerted_at
- * @property-read CarbonInterface|null $issues_notified_at
  * @property-read array<int, array{issue_id: string, kind: string}>|null $pending_issue_notifications
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
@@ -104,7 +103,6 @@ final class Project extends Model
             'token_hash' => 'string',
             'last_heartbeat_at' => 'datetime',
             'heartbeat_alerted_at' => 'datetime',
-            'issues_notified_at' => 'datetime',
             'pending_issue_notifications' => 'array',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

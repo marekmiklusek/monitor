@@ -11,6 +11,7 @@ use App\Notifications\IssueOpened;
 use App\Notifications\AdminNotifiable;
 use App\Actions\FlushIssueNotifications;
 use App\Actions\ProcessIngestedOccurrences;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -39,8 +40,7 @@ it('notifies about a new issue', function (): void {
 
     Notification::assertSentTimes(IssueOpened::class, 1);
 
-    expect($project->refresh()->issues_notified_at)->not->toBeNull()
-        ->and($project->pending_issue_notifications)->toBeNull();
+    expect($project->refresh()->pending_issue_notifications)->toBeNull();
 });
 
 it('does not notify about a repeated occurrence of an open issue', function (): void {
@@ -63,8 +63,6 @@ it('notifies about a regression when a resolved issue reopens', function (): voi
     resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence()]);
 
     Issue::query()->sole()->fill(['status' => IssueStatus::Resolved])->save();
-
-    $project->fill(['issues_notified_at' => null])->save();
 
     Notification::fake();
 
@@ -89,7 +87,7 @@ it('does not notify about a repeated occurrence of an ignored issue', function (
     Notification::assertNothingSent();
 });
 
-it('holds back notifications inside the throttle window', function (): void {
+it('notifies about a new issue immediately, even right after a previous notification', function (): void {
     $project = Project::factory()->create();
 
     resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence()]);
@@ -100,15 +98,31 @@ it('holds back notifications inside the throttle window', function (): void {
         notifiableOccurrence(['line' => 99]),
     ]);
 
-    Notification::assertNothingSent();
+    Notification::assertSentTimes(IssueOpened::class, 1);
 
-    expect($project->refresh()->pending_issue_notifications)->toHaveCount(1);
+    expect($project->refresh()->pending_issue_notifications)->toBeNull();
 });
 
-it('merges the held back issues into a single digest', function (): void {
+it('notifies about a regression immediately, even right after a previous notification', function (): void {
     $project = Project::factory()->create();
 
     resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence()]);
+
+    Issue::query()->sole()->fill(['status' => IssueStatus::Resolved])->save();
+
+    Notification::fake();
+
+    resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence()]);
+
+    Notification::assertSentTimes(IssueOpened::class, 1);
+
+    expect($project->refresh()->pending_issue_notifications)->toBeNull();
+});
+
+it('merges issues opened in a single batch into one digest', function (): void {
+    Notification::fake();
+
+    $project = Project::factory()->create();
 
     resolve(ProcessIngestedOccurrences::class)->execute($project, [
         notifiableOccurrence(['line' => 11]),
@@ -116,21 +130,57 @@ it('merges the held back issues into a single digest', function (): void {
         notifiableOccurrence(['line' => 33]),
     ]);
 
-    expect($project->refresh()->pending_issue_notifications)->toHaveCount(3);
-
-    Notification::fake();
-
-    $this->travel(20)->minutes();
-
-    $this->artisan('monitor:flush-issue-notifications');
-
     Notification::assertSentTimes(IssueDigest::class, 1);
     Notification::assertNotSentTo(new AdminNotifiable, IssueOpened::class);
 
     expect($project->refresh()->pending_issue_notifications)->toBeNull();
 });
 
-it('sends a single notification when only one issue was held back', function (): void {
+it('holds back the issues that exceed the immediate limit', function (): void {
+    config()->set('monitoring.max_immediate_notifications_per_minute', 2);
+
+    $project = Project::factory()->create();
+
+    resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence()]);
+    resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence(['line' => 11])]);
+
+    Notification::fake();
+
+    resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence(['line' => 22])]);
+
+    Notification::assertNothingSent();
+
+    expect($project->refresh()->pending_issue_notifications)->toHaveCount(1);
+});
+
+it('sends the rate limited issues as a digest once the limiter decays', function (): void {
+    config()->set('monitoring.max_immediate_notifications_per_minute', 1);
+
+    $project = Project::factory()->create();
+
+    resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence()]);
+
+    resolve(ProcessIngestedOccurrences::class)->execute($project, [
+        notifiableOccurrence(['line' => 11]),
+        notifiableOccurrence(['line' => 22]),
+    ]);
+
+    expect($project->refresh()->pending_issue_notifications)->toHaveCount(2);
+
+    Notification::fake();
+
+    $this->travel(2)->minutes();
+
+    $this->artisan('monitor:flush-issue-notifications');
+
+    Notification::assertSentTimes(IssueDigest::class, 1);
+
+    expect($project->refresh()->pending_issue_notifications)->toBeNull();
+});
+
+it('sends a single notification when only one rate limited issue was held back', function (): void {
+    config()->set('monitoring.max_immediate_notifications_per_minute', 1);
+
     $project = Project::factory()->create();
 
     resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence()]);
@@ -141,7 +191,7 @@ it('sends a single notification when only one issue was held back', function ():
 
     Notification::fake();
 
-    $this->travel(20)->minutes();
+    $this->travel(2)->minutes();
 
     $this->artisan('monitor:flush-issue-notifications');
 
@@ -149,7 +199,33 @@ it('sends a single notification when only one issue was held back', function ():
     Notification::assertNotSentTo(new AdminNotifiable, IssueDigest::class);
 });
 
+it('keeps the rate limited issues pending while the limiter is still exhausted', function (): void {
+    config()->set('monitoring.max_immediate_notifications_per_minute', 1);
+
+    $project = Project::factory()->create();
+
+    resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence()]);
+
+    resolve(ProcessIngestedOccurrences::class)->execute($project, [
+        notifiableOccurrence(['line' => 99]),
+    ]);
+
+    Notification::fake();
+
+    $this->artisan('monitor:flush-issue-notifications');
+
+    Notification::assertNothingSent();
+
+    expect($project->refresh()->pending_issue_notifications)->toHaveCount(1);
+});
+
+it('queues the issue notifications instead of sending them during the request', function (string $notification): void {
+    expect(class_implements($notification))->toContain(ShouldQueue::class);
+})->with([IssueOpened::class, IssueDigest::class]);
+
 it('drops pending entries whose issue no longer exists', function (): void {
+    config()->set('monitoring.max_immediate_notifications_per_minute', 1);
+
     $project = Project::factory()->create();
 
     resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence()]);
@@ -162,7 +238,7 @@ it('drops pending entries whose issue no longer exists', function (): void {
 
     Notification::fake();
 
-    $this->travel(20)->minutes();
+    $this->travel(2)->minutes();
 
     $this->artisan('monitor:flush-issue-notifications');
 
@@ -178,18 +254,12 @@ it('sends one digest across every channel, not one per issue', function (): void
 
     $project = Project::factory()->create();
 
-    resolve(ProcessIngestedOccurrences::class)->execute($project, [notifiableOccurrence()]);
+    Notification::fake();
 
     resolve(ProcessIngestedOccurrences::class)->execute($project, [
         notifiableOccurrence(['line' => 11]),
         notifiableOccurrence(['line' => 22]),
     ]);
-
-    Notification::fake();
-
-    $this->travel(20)->minutes();
-
-    $this->artisan('monitor:flush-issue-notifications');
 
     Notification::assertSentTimes(IssueDigest::class, 1);
 

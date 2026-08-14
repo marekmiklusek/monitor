@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-pest()->tia()->locally();
+// pest()->tia()->locally();
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)

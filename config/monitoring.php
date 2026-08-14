@@ -96,14 +96,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Issue Notification Throttle
+    | Immediate Notification Limit
     |--------------------------------------------------------------------------
     |
-    | Minimum minutes between issue notification mails per project. Issues
-    | opened within the window are collected into a digest mail.
+    | New issues and regressions are notified immediately, bypassing the
+    | throttle window above. This caps how many such notifications a single
+    | project may send per minute. Notifications are queued, so the cap is
+    | not there to protect the ingest request; it only stops a pathological
+    | case, such as an error producing random fingerprints, from sending
+    | endless messages. Whatever exceeds the cap stays pending and is
+    | collected into the next digest.
     |
     */
 
-    'issue_notification_throttle_minutes' => (int) env('MONITORING_ISSUE_NOTIFICATION_THROTTLE_MINUTES', 15),
+    'max_immediate_notifications_per_minute' => (int) env('MONITORING_MAX_IMMEDIATE_NOTIFICATIONS_PER_MINUTE', 20),
 
 ];
