@@ -1,12 +1,14 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "marekmiklusek/laravel-starter-kit-react",
+    "name": "marekmiklusek/monitor",
     "type": "project",
-    "description": "Laravel React starter kit with code quality tools pre-configured.",
+    "description": "Self hosted monitoring hub for Laravel applications: exceptions, failed jobs, logs and heartbeats, grouped into issues and alerted by mail or Telegram.",
     "keywords": [
         "laravel",
-        "react",
-        "starter-kit"
+        "monitoring",
+        "error-tracking",
+        "heartbeat",
+        "self-hosted"
     ],
     "license": "MIT",
     "require": {
