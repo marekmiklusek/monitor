@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "marekmiklusek/monitor",
     "type": "project",
-    "description": "Self hosted monitoring hub for Laravel applications: exceptions, failed jobs, logs and heartbeats, grouped into issues and alerted by mail or Telegram.",
+    "description": "Self hosted monitoring hub for Laravel applications.",
     "keywords": [
         "laravel",
         "monitoring",
