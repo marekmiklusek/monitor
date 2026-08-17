@@ -139,6 +139,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     <Link
                         href={dashboard()}
                         prefetch
+                        cacheFor={['0s', '30s']}
                         className="flex items-center space-x-2"
                     >
                         <AppLogo />
