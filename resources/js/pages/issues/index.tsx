@@ -1,6 +1,13 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { IssueStatusBadge } from '@/components/monitoring/issue-status-badge';
 import { Pagination } from '@/components/monitoring/pagination';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { isAfter, relativeTime } from '@/lib/relative-time';
@@ -13,6 +20,8 @@ import type {
     Paginated,
     ProjectSummary,
 } from '@/types';
+
+const ALL_PROJECTS = 'all';
 
 const TYPE_LABELS: Record<OccurrenceType, string> = {
     exception: 'Exception',
@@ -68,7 +77,7 @@ export default function IssuesIndex({
         router.get(
             buildQuery({
                 status: filters.status,
-                project: project === '' ? null : project,
+                project: project === ALL_PROJECTS ? null : project,
             }),
             {},
             { preserveScroll: true },
@@ -102,20 +111,24 @@ export default function IssuesIndex({
                         ))}
                     </div>
 
-                    <select
-                        value={filters.project ?? ''}
-                        onChange={(event) =>
-                            handleProjectChange(event.target.value)
-                        }
-                        className="rounded-md border bg-background px-3 py-1.5 text-sm"
+                    <Select
+                        value={filters.project ?? ALL_PROJECTS}
+                        onValueChange={handleProjectChange}
                     >
-                        <option value="">{__('All projects')}</option>
-                        {projects.map((project) => (
-                            <option key={project.id} value={project.id}>
-                                {project.name}
-                            </option>
-                        ))}
-                    </select>
+                        <SelectTrigger size="sm" className="w-48">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={ALL_PROJECTS}>
+                                {__('All projects')}
+                            </SelectItem>
+                            {projects.map((project) => (
+                                <SelectItem key={project.id} value={project.id}>
+                                    {project.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 {issues.data.length === 0 ? (
